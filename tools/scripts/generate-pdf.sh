@@ -34,6 +34,7 @@ PDF_MARGIN_RIGHT="1in"
 PDF_MARGIN_BOTTOM="1in"
 PDF_MARGIN_LEFT="1in"
 PDF_LINE_HEIGHT="1.5"
+PDF_DOCUMENT_CLASS="book"  # Use 'book' as default
 
 if [ -f "book.yaml" ]; then
   # Extract PDF settings if they exist
@@ -84,14 +85,34 @@ echo "  - Font Size: $PDF_FONT_SIZE"
 echo "  - Paper Size: $PDF_PAPER_SIZE"
 echo "  - Margins: $PDF_MARGIN_TOP, $PDF_MARGIN_RIGHT, $PDF_MARGIN_BOTTOM, $PDF_MARGIN_LEFT"
 echo "  - Line Height: $PDF_LINE_HEIGHT"
+echo "  - Document Class: $PDF_DOCUMENT_CLASS"
+echo "  - Template: $PDF_TEMPLATE"
+
+# Set publisher and author from book.yaml if not already defined
+if [ -z "$BOOK_AUTHOR" ] && [ -f "book.yaml" ]; then
+  BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
+  if [ -z "$BOOK_AUTHOR" ]; then
+    BOOK_AUTHOR="Author Name"
+  fi
+fi
+
+if [ -z "$PUBLISHER" ] && [ -f "book.yaml" ]; then
+  PUBLISHER=$(grep 'publisher:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
+  if [ -z "$PUBLISHER" ]; then
+    PUBLISHER="Publisher Name"
+  fi
+fi
 
 # First attempt: Use LaTeX template if available
-if [ -n "$PDF_TEMPLATE" ]; then
+if [ -f "$PDF_TEMPLATE" ]; then
   echo "Using LaTeX template: $PDF_TEMPLATE"
   pandoc "$INPUT_FILE" -o "$OUTPUT_FILE" \
     --template="$PDF_TEMPLATE" \
     --metadata title="$BOOK_TITLE" \
+    --metadata author="$BOOK_AUTHOR" \
+    --metadata publisher="$PUBLISHER" \
     --metadata=lang:"$LANGUAGE" \
+    --variable=documentclass:"$PDF_DOCUMENT_CLASS" \
     --pdf-engine=xelatex \
     --toc \
     --variable=fontsize:"$PDF_FONT_SIZE" \
@@ -101,10 +122,13 @@ if [ -n "$PDF_TEMPLATE" ]; then
     --resource-path="$RESOURCE_PATHS"
 else
   # First attempt: Fallback to default pandoc styling
-  echo "Using default PDF styling"
+  echo "No custom template found, using default PDF styling"
   pandoc "$INPUT_FILE" -o "$OUTPUT_FILE" \
     --metadata title="$BOOK_TITLE" \
+    --metadata author="$BOOK_AUTHOR" \
+    --metadata publisher="$PUBLISHER" \
     --metadata=lang:"$LANGUAGE" \
+    --variable=documentclass:"$PDF_DOCUMENT_CLASS" \
     --pdf-engine=xelatex \
     --toc \
     --variable=fontsize:"$PDF_FONT_SIZE" \
@@ -119,11 +143,15 @@ if [ $? -ne 0 ] || [ ! -s "$OUTPUT_FILE" ]; then
   echo "⚠️ First PDF generation attempt failed, trying with more resilient settings..."
   
   # Create a version of the markdown with image references made more resilient
-  sed -i 's/!\[\([^]]*\)\](\([^)]*\))/![\1](images\/\2)/g' "$SAFE_INPUT_FILE"
+  sed -i 's/!\[\([^]]*\)\](images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
+  sed -i 's/!\[\([^]]*\)\](book\/images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
+  sed -i 's/!\[\([^]]*\)\](book\/[^/)]*\/images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
   
   # Second attempt: Try with modified settings and more lenient image paths
   pandoc "$SAFE_INPUT_FILE" -o "$OUTPUT_FILE" \
     --metadata title="$BOOK_TITLE" \
+    --metadata author="$BOOK_AUTHOR" \
+    --metadata publisher="$PUBLISHER" \
     --metadata=lang:"$LANGUAGE" \
     --pdf-engine=xelatex \
     --toc \
@@ -138,11 +166,13 @@ if [ $? -ne 0 ] || [ ! -s "$OUTPUT_FILE" ]; then
   if [ ! -s "$OUTPUT_FILE" ]; then
     echo "⚠️ WARNING: PDF generation with images failed, creating a minimal PDF without images..."
     # Create a version with image references removed
-    sed -i 's/!\[\([^]]*\)\](\([^)]*\))//g' "$SAFE_INPUT_FILE"
+    sed -i 's/!\[\([^]]*\)\]([^)]*)//g' "$SAFE_INPUT_FILE"
     
     # Final attempt: minimal PDF with no images
     pandoc "$SAFE_INPUT_FILE" -o "$OUTPUT_FILE" \
       --metadata title="$BOOK_TITLE" \
+      --metadata author="$BOOK_AUTHOR" \
+      --metadata publisher="$PUBLISHER" \
       --metadata=lang:"$LANGUAGE" \
       --pdf-engine=xelatex \
       --toc \
@@ -156,9 +186,9 @@ if [ $? -ne 0 ] || [ ! -s "$OUTPUT_FILE" ]; then
       echo "⚠️ WARNING: All PDF generation attempts failed, creating placeholder PDF..."
       PLACEHOLDER_FILE="$(dirname "$INPUT_FILE")/placeholder.md"
       echo "# $BOOK_TITLE - Placeholder PDF" > "$PLACEHOLDER_FILE"
-      echo "PDF generation encountered issues. Please check your Markdown and images." >> "$PLACEHOLDER_FILE"
+      echo "PDF generation encountered issues. Please check your Markdown content and template settings." >> "$PLACEHOLDER_FILE"
       echo "If using a custom LaTeX template, verify it's compatible with your Pandoc version." >> "$PLACEHOLDER_FILE"
-      echo "Try running the build with --skip-pdf to generate other formats." >> "$PLACEHOLDER_FILE"
+      echo "Try running the build with --skip-pdf to generate other formats while troubleshooting the PDF output." >> "$PLACEHOLDER_FILE"
       pandoc "$PLACEHOLDER_FILE" -o "$OUTPUT_FILE" --pdf-engine=xelatex
     fi
   fi
@@ -167,6 +197,10 @@ fi
 # Check final result
 if [ -s "$OUTPUT_FILE" ]; then
   echo "✅ PDF created successfully at $OUTPUT_FILE"
+  
+  # Get the file size to give some feedback
+  FILE_SIZE=$(du -h "$OUTPUT_FILE" | cut -f1)
+  echo "📊 PDF file size: $FILE_SIZE"
 else
   echo "❌ Failed to create PDF at $OUTPUT_FILE"
   exit 1
