@@ -16,6 +16,11 @@
 \usepackage{float}
 \usepackage{titlesec}
 \usepackage{fancyhdr}
+\usepackage{enumitem}
+
+% Define tightlist command - needed for Pandoc's markdown conversion
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
 % Configure fonts
 \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
