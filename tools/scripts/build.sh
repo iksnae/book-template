@@ -62,7 +62,8 @@ if [ -f "book.yaml" ]; then
       in_languages_section=true
     elif [[ $in_languages_section == true ]]; then
       if [[ $line =~ ^[[:space:]]*- ]]; then
-        lang=$(echo $line | sed 's/^[[:space:]]*- //' | sed 's/"//g' | sed "s/'//g" | tr -d '[:space:]')
+        # Extract only the language code, removing any comment
+        lang=$(echo $line | sed 's/^[[:space:]]*- //' | sed 's/"//g' | sed "s/'//g" | sed 's/#.*$//' | tr -d '[:space:]')
         CONFIGURED_LANGUAGES+=("$lang")
       elif [[ $line =~ ^[a-zA-Z] ]]; then
         # We've reached a new section, stop parsing
