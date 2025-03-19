@@ -27,8 +27,8 @@ Overall project completion: **~40%**
 | Repository Structure | ✅ COMPLETE | All required directories and basic files are in place |
 | Build Scripts | ✅ COMPLETE | Core functionality working, may need refinement |
 | Configuration System | 🟡 PARTIAL | Basic config exists in `book.yaml`, needs enhancement |
-| Docker Image | ❌ BLOCKED | `iksnae/book-builder` image doesn't exist or isn't accessible |
-| GitHub Workflow | ✅ COMPLETE | Workflow files exist but depend on missing Docker image |
+| Docker Image Reference | 🟡 PENDING | References `iksnae/book-builder` which is managed in a separate repository |
+| GitHub Workflow | ✅ COMPLETE | Workflow files exist but depend on Docker image from separate repo |
 | Example Content | 🟡 MINIMAL | Basic sample content exists, needs expansion |
 | Output Templates | 🟡 BASIC | Initial templates exist but need improvement |
 | Documentation | 🟡 PARTIAL | Basic docs exist but need enhancement |
@@ -37,47 +37,48 @@ Overall project completion: **~40%**
 
 ### High Priority
 
-1. **[Issue #7](https://github.com/iksnae/book-template/issues/7): Create and Publish the book-builder Docker Image**
-   - **Status:** Open
-   - **Blocker:** Yes - CI/CD pipeline depends on this
-   - **Description:** The Docker image referenced in workflows needs to be created and published to Docker Hub
-
-### Medium Priority
-
-2. **[Issue #10](https://github.com/iksnae/book-template/issues/10): Enhanced Book Configuration System**
+1. **[Issue #10](https://github.com/iksnae/book-template/issues/10): Enhanced Book Configuration System**
    - **Status:** Open
    - **Blocker:** No
    - **Description:** Expand `book.yaml` to include more customization options
 
-3. **[Issue #9](https://github.com/iksnae/book-template/issues/9): Develop Professional Output Templates**
+2. **[Issue #9](https://github.com/iksnae/book-template/issues/9): Develop Professional Output Templates**
    - **Status:** Open
    - **Blocker:** No
    - **Description:** Create better templates for PDF, EPUB, and HTML outputs
 
-4. **[Issue #8](https://github.com/iksnae/book-template/issues/8): Create Complete Example Book**
+3. **[Issue #8](https://github.com/iksnae/book-template/issues/8): Create Complete Example Book**
    - **Status:** Open
    - **Blocker:** No
    - **Description:** Develop comprehensive example demonstrating all features
 
+### External Dependencies
+
+**[Issue #7](https://github.com/iksnae/book-template/issues/7): Create and Publish the book-builder Docker Image**
+   - **Status:** Open
+   - **Dependency:** Yes - CI/CD pipeline depends on this
+   - **Scope:** This work should be completed in the separate `iksnae/book-builder` repository
+   - **Description:** The Docker image referenced in workflows needs to be created and published to Docker Hub
+
 ### Future Enhancements
 
-5. **[Issue #2](https://github.com/iksnae/book-template/issues/2): Interactive Preview Mode**
+1. **[Issue #2](https://github.com/iksnae/book-template/issues/2): Interactive Preview Mode**
    - **Status:** Open
    - **Description:** Add real-time preview capability for authors
 
-6. **[Issue #1](https://github.com/iksnae/book-template/issues/1): Theme System for Easy Styling**
+2. **[Issue #1](https://github.com/iksnae/book-template/issues/1): Theme System for Easy Styling**
    - **Status:** Open
    - **Description:** Add pre-designed themes for book styling
 
-7. **[Issue #3](https://github.com/iksnae/book-template/issues/3): Collaborative Editing Support**
+3. **[Issue #3](https://github.com/iksnae/book-template/issues/3): Collaborative Editing Support**
    - **Status:** Open
    - **Description:** Improve collaboration workflows for teams
 
-8. **[Issue #4](https://github.com/iksnae/book-template/issues/4): Advanced Export Options for Publishing Platforms**
+4. **[Issue #4](https://github.com/iksnae/book-template/issues/4): Advanced Export Options for Publishing Platforms**
    - **Status:** Open
    - **Description:** Add platform-specific export presets (KDP, IngramSpark, etc.)
 
-9. **[Issue #5](https://github.com/iksnae/book-template/issues/5): Interactive Elements for Digital Books**
+5. **[Issue #5](https://github.com/iksnae/book-template/issues/5): Interactive Elements for Digital Books**
    - **Status:** Open
    - **Description:** Support for interactive elements in digital book formats
 
@@ -85,28 +86,27 @@ Overall project completion: **~40%**
 
 ### Immediate Next Steps (1-2 weeks)
 
-1. Create and publish the `iksnae/book-builder` Docker image
-   - Define Dockerfile with all necessary dependencies
-   - Test image locally
-   - Publish to Docker Hub
-   - Update workflows to use the published image
-
-2. Enhance the book configuration system
+1. Enhance the book configuration system
    - Expand `book.yaml` with additional metadata options
    - Add format-specific settings
    - Improve documentation for config options
 
-### Short-term Goals (3-4 weeks)
-
-3. Develop professional output templates
+2. Develop professional output templates
    - Create better LaTeX templates for PDF
    - Improve EPUB templates and styling
    - Enhance HTML output for web reading
 
-4. Create comprehensive example book
+### Short-term Goals (3-4 weeks)
+
+3. Create comprehensive example book
    - Develop "Book Template User Guide" as the example
    - Demonstrate all formatting features
    - Include multi-language examples
+
+4. Update and improve GitHub workflow
+   - Once Docker image is available (from separate repo)
+   - Add more build options and flexibility
+   - Improve artifact management
 
 ### Medium-term Goals (5-8 weeks)
 
@@ -134,12 +134,20 @@ Overall project completion: **~40%**
 
 ## Known Dependencies and Requirements
 
-- Docker environment for consistent builds
+- Docker environment for consistent builds (`iksnae/book-builder` image from separate repo)
 - Pandoc for document conversion
 - LaTeX for PDF generation
 - Calibre for EPUB/MOBI conversion
 - GitHub Actions for CI/CD
 - GitHub Pages for hosting documentation and examples
+
+## Related Projects
+
+| Project | Repository | Description | Relationship |
+|---------|------------|-------------|--------------|
+| Book Builder | `iksnae/book-builder` | Docker image definition for building books | Dependency - Template uses this image for building |
+| Actual Intelligence | `iksnae/actual-intelligence` | A practical guide to using AI tools | Example implementation of template |
+| Rise and Code | `iksnae/rise-and-code` | Free book teaching programming concepts | Example implementation of template |
 
 ## Documentation Status
 
