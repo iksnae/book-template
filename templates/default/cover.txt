@@ -1,0 +1,7 @@
+# Default Cover Image
+
+This text file is a placeholder for a default cover image.
+
+In a production environment, there should be a file called cover.png
+in this directory that would be used as a fallback when no custom
+cover image is provided in the book configuration.
