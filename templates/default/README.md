@@ -1,31 +1,18 @@
 # Default Templates
 
-This directory contains default templates and assets for the book build system.
+This directory contains default templates and assets used when specific ones are not provided in the book's configuration.
 
-## Default Cover
+## Contents
 
-The `cover.png` in this directory is used as a fallback when no custom cover is provided in the `art/` directory.
+- `cover.png` - A default cover image used when no custom cover is provided
+- Other default assets will be added as needed
 
-## Using Custom Templates
+## Usage
 
-To customize any of the default templates:
+These files are used automatically by the build system when specific assets are not found in the locations specified in `book.yaml`.
 
-1. Copy the file you want to modify to the appropriate directory
-2. Make your changes to the copy
-3. Update your `book.yaml` to point to your custom template
+For example, if the `epub.cover_image` path in `book.yaml` points to a file that doesn't exist, the build system will fall back to using `templates/default/cover.png`.
 
-For example, to use a custom LaTeX template:
+## Customization
 
-```yaml
-pdf:
-  template: "templates/pdf/my-custom-template.latex"
-```
-
-## Template Structure
-
-The template system is organized by output format:
-
-- `templates/pdf/` - LaTeX templates for PDF output
-- `templates/epub/` - CSS and templates for EPUB output
-- `templates/html/` - HTML and CSS templates for web output
-- `templates/default/` - Default assets like cover images
+It's recommended to provide your own custom assets rather than using these defaults. See the main documentation for details on how to specify custom templates and assets in your `book.yaml` file.
