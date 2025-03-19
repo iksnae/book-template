@@ -29,13 +29,13 @@ This starter kit gives you everything you need to create a professional book:
 - Automatic table of contents generation
 - Cover page setup
 - Publishing to multiple formats with a single command
-- Online build system so you don't need to install anything
+- Cloud-based build system - no installations required
 
 ## How It Works
 
 1. **Set Up Your Book**: Fill in your book details in the simple `book.yaml` file
 2. **Write Your Content**: Add your text to the Markdown files in the chapter folders
-3. **Build Your Book**: Run the build script or let GitHub Actions build it automatically
+3. **Publish Changes**: Push your changes to GitHub to trigger the automated build
 4. **Get Your Books**: Download beautifully formatted PDF, EPUB, MOBI, and HTML files
 
 ## Writing Your Book
@@ -49,19 +49,13 @@ Your book content goes in the `book/en/` folder (or other language folders):
 
 ## Building Your Book
 
-The easiest way to build your book:
+The process is fully automated:
 
 1. Push your changes to GitHub
 2. GitHub Actions will automatically build all formats
 3. Download the finished books from the releases page
 
-To build locally, use:
-
-```
-./build.sh
-```
-
-This uses the pre-configured Docker image with all necessary tools already installed.
+No local setup or technical knowledge required - everything happens in the cloud!
 
 ## Customizing Your Book
 
@@ -87,8 +81,8 @@ Want to change the look and feel? Edit the templates:
 
 Everything is already set up - all dependencies and tools are publicly available:
 
-- The `iksnae/book-builder` Docker image contains all required software
-- GitHub Actions workflow is pre-configured
+- All building happens through GitHub's automation system
+- Pre-configured workflows handle all technical details
 - No need to install any specialized software on your computer
 
 ## License
