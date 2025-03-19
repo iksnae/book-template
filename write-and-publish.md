@@ -57,9 +57,15 @@ Numbered lists:
 
 ### Images
 
-To add an image:
+To add an image, use this syntax:
 
-![Example image description](images/example-image.jpg)
+```markdown
+![Image description](images/filename.jpg)
+```
+
+For example, you can reference an image from the book's main images directory:
+
+![Book cover](../../images/cover.jpg)
 
 ### Tables
 
