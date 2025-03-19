@@ -4,6 +4,19 @@
 
 Create and publish your own professional-looking books with this easy-to-use starter kit. Simply write in plain Markdown text, and automatically generate beautiful books in multiple formats ready for distribution.
 
+## Our Philosophy: Write, Push, Forget
+
+We believe book creation should be simple: **Write your content, Push to GitHub, and Forget about the technical details**. The system automatically handles everything else, delivering beautifully formatted books ready for distribution.
+
+## Sample Books
+
+See what your books will look like:
+
+- [📕 Download Sample PDF](https://github.com/iksnae/book-template/releases/latest/download/book-template-en.pdf)
+- [📘 Download Sample EPUB](https://github.com/iksnae/book-template/releases/latest/download/book-template-en.epub)
+- [📙 Download Sample MOBI](https://github.com/iksnae/book-template/releases/latest/download/book-template-en.mobi)
+- [🌐 View Sample HTML](https://iksnae.github.io/book-template/)
+
 ## Why Use This Starter Kit?
 
 - **Simple Writing Experience**: Write in Markdown - if you can create a text document, you can create a book
@@ -47,15 +60,19 @@ Your book content goes in the `book/en/` folder (or other language folders):
 - Add sections to your chapter in numbered files (`01-section.md`, `02-section.md`, etc.)
 - Place images in the `images/` folder within each chapter
 
-## Building Your Book
+## Automatic Publishing
 
-The process is fully automated:
+The process happens automatically without any intervention:
 
 1. Push your changes to GitHub
 2. GitHub Actions will automatically build all formats
-3. Download the finished books from the releases page
+3. Your books appear in the releases section with direct download links:
+   - `https://github.com/yourusername/your-repo/releases/latest/download/your-book-en.pdf`
+   - `https://github.com/yourusername/your-repo/releases/latest/download/your-book-en.epub`
+   - `https://github.com/yourusername/your-repo/releases/latest/download/your-book-en.mobi`
+   - Web version available at `https://yourusername.github.io/your-repo/`
 
-No local setup or technical knowledge required - everything happens in the cloud!
+Just write and push - we handle the rest!
 
 ## Customizing Your Book
 
