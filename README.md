@@ -12,9 +12,9 @@ We believe book creation should be simple: **Write your content, Push to GitHub,
 
 <div align="center">
 
-[![Download PDF](https://img.shields.io/badge/Download-PDF%20Version-blue?style=for-the-badge&logo=adobe-acrobat-reader)](https://github.com/iksnae/book-template/releases/latest/download/book-template.pdf)
-[![Download EPUB](https://img.shields.io/badge/Download-EPUB%20Version-green?style=for-the-badge&logo=apple)](https://github.com/iksnae/book-template/releases/latest/download/book-template.epub)
-[![Download MOBI](https://img.shields.io/badge/Download-Kindle%20Version-orange?style=for-the-badge&logo=amazon)](https://github.com/iksnae/book-template/releases/latest/download/book-template.mobi)
+[![Download PDF](https://img.shields.io/badge/Download-PDF%20Version-blue?style=for-the-badge&logo=adobe-acrobat-reader)](https://github.com/iksnae/book-template/releases/latest/download/write-and-publish.pdf)
+[![Download EPUB](https://img.shields.io/badge/Download-EPUB%20Version-green?style=for-the-badge&logo=apple)](https://github.com/iksnae/book-template/releases/latest/download/write-and-publish.epub)
+[![Download MOBI](https://img.shields.io/badge/Download-Kindle%20Version-orange?style=for-the-badge&logo=amazon)](https://github.com/iksnae/book-template/releases/latest/download/write-and-publish.mobi)
 [![Read Online](https://img.shields.io/badge/Read-Web%20Version-purple?style=for-the-badge&logo=html5)](https://iksnae.github.io/book-template/)
 
 </div>
