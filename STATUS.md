@@ -14,24 +14,35 @@ The book-template project provides a framework for authoring books in Markdown a
 |-------|-------------|--------|--------------|
 | 1 | Basic Structure Setup | COMPLETED | 100% |
 | 2 | Documentation & Examples | IN PROGRESS | 40% |
-| 3 | Template Customization & Enhancement | IN PROGRESS | 50% |
+| 3 | Template Customization & Enhancement | IN PROGRESS | 60% |
 | 4 | Supplementary Resources | NOT STARTED | 0% |
-| 5 | Testing & Refinement | NOT STARTED | 0% |
+| 5 | Testing & Refinement | PARTIALLY STARTED | 20% |
 
-Overall project completion: **~40%**
+Overall project completion: **~45%**
 
 ## Critical Components Status
 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Repository Structure | ✅ COMPLETE | All required directories and basic files are in place |
-| Build Scripts | ✅ COMPLETE | Core functionality working, may need refinement |
+| Build Scripts | ✅ COMPLETE | Core functionality working, recently improved with PRs #11, #12, #13 |
 | Configuration System | 🟡 PARTIAL | Basic config exists in `book.yaml`, needs enhancement |
-| Docker Image Reference | 🟡 PENDING | References `iksnae/book-builder` which is managed in a separate repository |
+| Docker Image Reference | 🟡 EXTERNAL | References `iksnae/book-builder` which is managed in separate repository |
 | GitHub Workflow | ✅ COMPLETE | Workflow files exist but depend on Docker image from separate repo |
 | Example Content | 🟡 MINIMAL | Basic sample content exists, needs expansion |
 | Output Templates | 🟡 BASIC | Initial templates exist but need improvement |
 | Documentation | 🟡 PARTIAL | Basic docs exist but need enhancement |
+
+## Recently Completed Items
+
+1. **Core Build Scripts (Issue #6)**
+   - Implemented full build process with support for multiple languages and formats
+   - Added proper error handling and logging
+
+2. **Fixed Build Issues (PRs #11, #12, #13)**
+   - Made the build process more resilient for missing images and resources
+   - Fixed PDF generation issues in LaTeX template
+   - Fixed cover image and build process issues
 
 ## Open Issues by Priority
 
@@ -55,7 +66,7 @@ Overall project completion: **~40%**
 ### External Dependencies
 
 **[Issue #7](https://github.com/iksnae/book-template/issues/7): Create and Publish the book-builder Docker Image**
-   - **Status:** Open
+   - **Status:** Closed (Out of Scope)
    - **Dependency:** Yes - CI/CD pipeline depends on this
    - **Scope:** This work should be completed in the separate `iksnae/book-builder` repository
    - **Description:** The Docker image referenced in workflows needs to be created and published to Docker Hub
@@ -86,19 +97,19 @@ Overall project completion: **~40%**
 
 ### Immediate Next Steps (1-2 weeks)
 
-1. Enhance the book configuration system
+1. Enhance the book configuration system (Issue #10)
    - Expand `book.yaml` with additional metadata options
    - Add format-specific settings
    - Improve documentation for config options
 
-2. Develop professional output templates
+2. Develop professional output templates (Issue #9)
    - Create better LaTeX templates for PDF
    - Improve EPUB templates and styling
    - Enhance HTML output for web reading
 
 ### Short-term Goals (3-4 weeks)
 
-3. Create comprehensive example book
+3. Create comprehensive example book (Issue #8)
    - Develop "Book Template User Guide" as the example
    - Demonstrate all formatting features
    - Include multi-language examples
@@ -110,12 +121,12 @@ Overall project completion: **~40%**
 
 ### Medium-term Goals (5-8 weeks)
 
-5. Implement interactive preview mode
+5. Implement interactive preview mode (Issue #2)
    - Create local development server
    - Add real-time preview functionality
    - Develop element inspector for debugging
 
-6. Add theme system
+6. Add theme system (Issue #1)
    - Create pre-designed themes
    - Add theme selection in configuration
    - Document theme customization
@@ -156,12 +167,14 @@ Overall project completion: **~40%**
 | README.md | ✅ COMPLETE | Main project documentation |
 | CUSTOMIZATION.md | ✅ COMPLETE | Instructions for customizing the template |
 | IMPLEMENTATION_PLAN.md | ✅ COMPLETE | Original implementation plan |
+| STATUS.md | ✅ COMPLETE | Project status tracking (this document) |
 | USER_GUIDE.md | ❌ NOT STARTED | Comprehensive usage guide |
 | THEMES.md | ❌ NOT STARTED | Theme documentation |
 | API.md | ❌ NOT STARTED | Script API documentation |
 
 ## Testing Status
 
+- 🟡 Basic build testing implemented through recent PRs
 - ❌ Unit tests not implemented
 - ❌ Integration tests not implemented
 - ❌ End-to-end tests not implemented
