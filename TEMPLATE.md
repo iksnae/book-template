@@ -1,6 +1,6 @@
-# Create Your Book with this Template
+# Create Your Book with this DIY Book Starter Kit
 
-Welcome to the Khaos Studios Book Template! This template provides a complete environment for writing and publishing your book across multiple formats.
+Welcome to the Khaos Studios DIY Book Starter Kit! This template provides a complete environment for writing and publishing your book across multiple formats.
 
 ## Getting Started in 3 Simple Steps
 
