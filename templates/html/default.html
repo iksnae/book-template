@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="$language$">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="generator" content="Book Template System">
+  $if(description)$
+  <meta name="description" content="$description$">
+  $endif$
+  $if(keywords)$
+  <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$">
+  $endif$
+  
+  <title>$if(title-prefix)$$title-prefix$ - $endif$$pagetitle$</title>
+  
+  <!-- CSS -->
+  <style>
+    $styles$
+  </style>
+  
+  $if(math)$
+  <!-- MathJax -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  $endif$
+  
+  <!-- Additional head elements -->
+  $for(header-includes)$
+  $header-includes$
+  $endfor$
+</head>
+
+<body>
+  <header>
+    <nav>
+      <div class="nav-title">
+        <a href="index.html">$if(title)$$title$$else$Book Template$endif$</a>
+      </div>
+      <div class="nav-links">
+        $if(toc)$
+        <a href="#table-of-contents">Contents</a>
+        $endif$
+        $for(include-before)$
+        $include-before$
+        $endfor$
+      </div>
+    </nav>
+  </header>
+
+  <div class="book-content">
+    $if(title)$
+    <div class="book-header">
+      <h1 class="title">$title$</h1>
+      $if(subtitle)$
+      <h2 class="subtitle">$subtitle$</h2>
+      $endif$
+      $if(author)$
+      <div class="author">
+        $for(author)$
+        <p class="author-name">$author$</p>
+        $endfor$
+      </div>
+      $endif$
+      $if(date)$
+      <p class="date">$date$</p>
+      $endif$
+    </div>
+    $endif$
+
+    $if(toc)$
+    <nav id="table-of-contents" class="toc">
+      <h2>Table of Contents</h2>
+      $toc$
+    </nav>
+    $endif$
+
+    <main>
+      $body$
+    </main>
+
+    $for(include-after)$
+    $include-after$
+    $endfor$
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <p>
+        $if(author)$
+        &copy; $author$
+        $endif$
+        $if(date)$
+        $date$
+        $endif$
+      </p>
+      <p>Created with <a href="https://github.com/iksnae/book-template">Book Template</a></p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // Add any JavaScript functionality here
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add anchor links to headers
+      var headers = document.querySelectorAll('h2, h3, h4, h5, h6');
+      headers.forEach(function(header) {
+        if (header.id) {
+          var link = document.createElement('a');
+          link.className = 'header-link';
+          link.href = '#' + header.id;
+          link.innerHTML = '#';
+          header.appendChild(link);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
