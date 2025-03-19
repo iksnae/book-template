@@ -1,14 +1,20 @@
 #!/bin/bash
 
-# Actual Intelligence Book Builder
-# Main entry point for building the book
+# Main build script for book-template
+# This is a convenience wrapper around tools/scripts/build.sh
 
-# This is a placeholder script that will be replaced with the actual build script
-# when copied from the actual-intelligence repo during implementation
+# Make the script exit on error
+set -e
 
-echo "📚 Book Template - Build Script Placeholder"
-echo "This script will be implemented as part of the book template project."
-echo "See IMPLEMENTATION_PLAN.md for details on the implementation timeline."
+# Make sure the tools/scripts directory exists
+if [ ! -d "tools/scripts" ]; then
+  echo "❌ Error: tools/scripts directory not found!"
+  echo "Make sure you're running this script from the root of the book-template repository."
+  exit 1
+fi
 
-# The actual implementation will forward arguments to the build script in tools/scripts/
-# exec tools/scripts/build.sh "$@"
+# Make the build script executable
+chmod +x tools/scripts/build.sh
+
+# Forward all arguments to the main build script
+tools/scripts/build.sh "$@"
