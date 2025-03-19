@@ -78,16 +78,31 @@ if [ -f "book.yaml" ]; then
   fi
 fi
 
+# Check for author and publisher if not already set
+if [ -z "$BOOK_AUTHOR" ] && [ -f "book.yaml" ]; then
+  BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
+  if [ -z "$BOOK_AUTHOR" ]; then
+    BOOK_AUTHOR="Author Name"
+  fi
+fi
+
+if [ -z "$PUBLISHER" ] && [ -f "book.yaml" ]; then
+  PUBLISHER=$(grep 'publisher:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
+  if [ -z "$PUBLISHER" ]; then
+    PUBLISHER="Publisher Name"
+  fi
+fi
+
 # Build pandoc command
 PANDOC_CMD="pandoc \"$INPUT_FILE\" -o \"$OUTPUT_FILE\" --standalone"
 
 # Add template if specified
-if [ -n "$HTML_TEMPLATE" ]; then
+if [ -n "$HTML_TEMPLATE" ] && [ -f "$HTML_TEMPLATE" ]; then
   PANDOC_CMD="$PANDOC_CMD --template=\"$HTML_TEMPLATE\""
 fi
 
 # Add CSS if specified
-if [ -n "$CSS_FILE" ]; then
+if [ -n "$CSS_FILE" ] && [ -f "$CSS_FILE" ]; then
   PANDOC_CMD="$PANDOC_CMD --css=\"$CSS_FILE\""
 fi
 
@@ -106,8 +121,13 @@ if [ "$SELF_CONTAINED" = true ]; then
   PANDOC_CMD="$PANDOC_CMD --self-contained"
 fi
 
+# Fix image paths to ensure they point to the correct location
+sed -i 's/!\[\([^]]*\)\](images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
+sed -i 's/!\[\([^]]*\)\](book\/images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
+sed -i 's/!\[\([^]]*\)\](book\/[^/)]*\/images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
+
 # Add metadata and resource path
-PANDOC_CMD="$PANDOC_CMD --metadata title=\"$BOOK_TITLE\" --metadata=lang:\"$LANGUAGE\" --resource-path=\"$RESOURCE_PATHS\""
+PANDOC_CMD="$PANDOC_CMD --metadata title=\"$BOOK_TITLE\" --metadata author=\"$BOOK_AUTHOR\" --metadata publisher=\"$PUBLISHER\" --metadata=lang:\"$LANGUAGE\" --resource-path=\"$RESOURCE_PATHS\""
 
 # Execute the command
 echo "Executing: $PANDOC_CMD"
@@ -123,6 +143,8 @@ if [ ! -s "$OUTPUT_FILE" ]; then
     --toc \
     --toc-depth=2 \
     --metadata title="$BOOK_TITLE" \
+    --metadata author="$BOOK_AUTHOR" \
+    --metadata publisher="$PUBLISHER" \
     --metadata=lang:"$LANGUAGE" \
     --resource-path="$RESOURCE_PATHS" || true
     
@@ -137,15 +159,37 @@ if [ ! -s "$OUTPUT_FILE" ]; then
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>$BOOK_TITLE</title>
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 2rem; }
-    h1 { text-align: center; margin-bottom: 2rem; }
+    body { 
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 2rem; 
+    }
+    h1 { text-align: center; margin-bottom: 2rem; color: #333; }
+    h2 { color: #444; margin-top: 2rem; }
     p { margin-bottom: 1rem; }
+    .author { text-align: center; font-style: italic; margin-bottom: 2rem; }
+    .publisher { text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 3rem; }
   </style>
 </head>
 <body>
   <h1>$BOOK_TITLE</h1>
-  <p>HTML generation encountered issues. Please check your Markdown content and template settings.</p>
-  <p>You might want to try building with --skip-html to generate other formats while troubleshooting the HTML output.</p>
+  <div class="author">By $BOOK_AUTHOR</div>
+  <div class="publisher">$PUBLISHER</div>
+  
+  <p>This is a minimal HTML version created when normal generation failed. The content may be incomplete.</p>
+  
+  <h2>Troubleshooting</h2>
+  <p>HTML generation encountered issues. Possible reasons include:</p>
+  <ul>
+    <li>Missing dependencies in the build environment</li>
+    <li>Issues with image paths or references</li>
+    <li>Problems with the HTML template or CSS</li>
+    <li>Markdown syntax issues in the source content</li>
+  </ul>
+  
+  <p>Try running the build with <code>--skip-html</code> to generate other formats while troubleshooting.</p>
 </body>
 </html>
 EOF
@@ -166,4 +210,15 @@ if [ -s "$OUTPUT_FILE" ]; then
 else
   echo "❌ Failed to create HTML at $OUTPUT_FILE"
   exit 1
+fi
+
+# Create index.html if needed
+echo "Creating index.html reference..."
+if [ "$LANGUAGE" = "en" ]; then
+  cp "$OUTPUT_FILE" "$(dirname "$OUTPUT_FILE")/index.html"
+  echo "✅ Created main index.html for English"
+else
+  mkdir -p "build/$LANGUAGE"
+  cp "$OUTPUT_FILE" "build/$LANGUAGE/index.html"
+  echo "✅ Created language-specific index.html for $LANGUAGE"
 fi
