@@ -1,3 +1,5 @@
+![](./art/image.jpg)
+
 # Book Template
 
 A flexible, Markdown-based book writing and publishing system that generates professional quality books in multiple formats.
