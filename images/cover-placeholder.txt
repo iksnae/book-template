@@ -1,0 +1,4 @@
+# No Cover Image Available
+This book was built without a cover image.
+To add a cover image, place cover.png in the art/ directory
+or specify a path in the book.yaml configuration.
