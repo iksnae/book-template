@@ -1,9 +1,0 @@
-SAMPLE IMAGE PLACEHOLDER
-
-A simple diagram showing the book creation workflow:
-1. Write content (markdown files)
-2. Configure book (book.yaml)
-3. Build book (build.sh)
-4. Share finished book (PDF/EPUB)
-
-This would be a simple flowchart with arrows connecting these steps.
