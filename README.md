@@ -171,4 +171,4 @@ This template is open source and available under the MIT License.
 
 ## Credits
 
-Developed by Khaos Studios.
+Developed in partneship with [Khaos Studio](http://khaos.studio).
