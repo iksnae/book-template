@@ -61,7 +61,16 @@ Overall project completion: **~45%**
 3. **[Issue #8](https://github.com/iksnae/book-template/issues/8): Create Complete Example Book**
    - **Status:** Open
    - **Blocker:** No
-   - **Description:** Develop comprehensive example demonstrating all features
+   - **Description:** Develop comprehensive English example demonstrating all features
+   - **Note:** Scope refined to focus on English-only content first
+
+### Medium Priority
+
+4. **[Issue #14](https://github.com/iksnae/book-template/issues/14): Add Multi-language Translation Support and Examples**
+   - **Status:** Open
+   - **Blocker:** No
+   - **Description:** Expand translation support and add examples in additional languages
+   - **Note:** Split from Issue #8 to allow focus on core example book first
 
 ### External Dependencies
 
@@ -107,38 +116,43 @@ Overall project completion: **~45%**
    - Improve EPUB templates and styling
    - Enhance HTML output for web reading
 
-### Short-term Goals (3-4 weeks)
-
 3. Create comprehensive example book (Issue #8)
-   - Develop "Book Template User Guide" as the example
+   - Develop English "Book Template User Guide" as the example
    - Demonstrate all formatting features
-   - Include multi-language examples
+   - Create sample art files and structure
+
+### Short-term Goals (3-4 weeks)
 
 4. Update and improve GitHub workflow
    - Once Docker image is available (from separate repo)
    - Add more build options and flexibility
    - Improve artifact management
 
+5. Add multi-language translation support (Issue #14)
+   - Translate example content to demonstrate multilingual capabilities
+   - Improve language-specific configuration and build options
+   - Document translation workflow best practices
+
 ### Medium-term Goals (5-8 weeks)
 
-5. Implement interactive preview mode (Issue #2)
+6. Implement interactive preview mode (Issue #2)
    - Create local development server
    - Add real-time preview functionality
    - Develop element inspector for debugging
 
-6. Add theme system (Issue #1)
+7. Add theme system (Issue #1)
    - Create pre-designed themes
    - Add theme selection in configuration
    - Document theme customization
 
 ### Long-term Goals (9+ weeks)
 
-7. Develop supplementary resources
+8. Develop supplementary resources
    - Create comprehensive user guide
    - Develop additional tools
    - Set up project website
 
-8. Implement advanced features
+9. Implement advanced features
    - Add collaborative editing support
    - Create platform-specific export presets
    - Add interactive elements for digital books
