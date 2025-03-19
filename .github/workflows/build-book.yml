@@ -1,0 +1,264 @@
+name: Build Book
+
+on:
+  push:
+    # Run on any branch when book content changes
+    paths:
+      - 'book/**'
+      - 'art/**'
+      - 'templates/**'
+      - 'build.sh'
+      - 'tools/**'
+      - '.github/workflows/build-book.yml'
+      - 'book.yaml'  # New configuration file
+  workflow_dispatch:  # Allow manual triggering
+
+# Permissions for creating releases and GitHub Pages
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    container:
+      image: iksnae/book-builder:latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      date: ${{ steps.version.outputs.date }}
+      cover_found: ${{ steps.cover.outputs.cover_found }}
+      book_title: ${{ steps.config.outputs.book_title }}
+      book_author: ${{ steps.config.outputs.book_author }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Load configuration from book.yaml if it exists
+      - name: Load configuration
+        id: config
+        run: |
+          if [ -f "book.yaml" ]; then
+            echo "Using configuration from book.yaml"
+            # Extract book title
+            BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//')
+            echo "book_title=$BOOK_TITLE" >> $GITHUB_OUTPUT
+            echo "BOOK_TITLE=$BOOK_TITLE" >> $GITHUB_ENV
+            
+            # Extract book author
+            BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//')
+            echo "book_author=$BOOK_AUTHOR" >> $GITHUB_OUTPUT
+            echo "BOOK_AUTHOR=$BOOK_AUTHOR" >> $GITHUB_ENV
+            
+            # Extract file prefix (used for output filenames)
+            FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//')
+            if [ -n "$FILE_PREFIX" ]; then
+              echo "FILE_PREFIX=$FILE_PREFIX" >> $GITHUB_ENV
+            else
+              # Default to lowercase book title with hyphens
+              FILE_PREFIX=$(echo "$BOOK_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')
+              echo "FILE_PREFIX=$FILE_PREFIX" >> $GITHUB_ENV
+            fi
+          else
+            echo "No book.yaml found, using default values"
+            echo "book_title=My Book" >> $GITHUB_OUTPUT
+            echo "BOOK_TITLE=My Book" >> $GITHUB_ENV
+            echo "book_author=Author Name" >> $GITHUB_OUTPUT
+            echo "BOOK_AUTHOR=Author Name" >> $GITHUB_ENV
+            echo "FILE_PREFIX=my-book" >> $GITHUB_ENV
+          fi
+          
+          # Print the configuration values for debugging
+          echo "Book Title: $BOOK_TITLE"
+          echo "Book Author: $BOOK_AUTHOR"
+          echo "File Prefix: $FILE_PREFIX"
+
+      - name: Set version and date
+        id: version
+        run: |
+          VERSION=$(date +'v%Y.%m.%d-%H%M')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          
+          DATE=$(date +'%B %d, %Y')
+          echo "DATE=$DATE" >> $GITHUB_ENV
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+
+      - name: Check for cover image
+        id: cover
+        run: |
+          if [ -f "art/cover.png" ]; then
+            echo "COVER_IMAGE=art/cover.png" >> $GITHUB_ENV
+            echo "✅ Found cover image at art/cover.png"
+            echo "cover_found=true" >> $GITHUB_OUTPUT
+          elif [ -f "book/images/cover.png" ]; then
+            echo "COVER_IMAGE=book/images/cover.png" >> $GITHUB_ENV
+            echo "✅ Found cover image at book/images/cover.png"
+            echo "cover_found=true" >> $GITHUB_OUTPUT
+          elif [ -f "book/en/images/cover.png" ]; then
+            echo "COVER_IMAGE=book/en/images/cover.png" >> $GITHUB_ENV
+            echo "✅ Found cover image at book/en/images/cover.png"
+            echo "cover_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ No cover image found, using default template cover"
+            echo "COVER_IMAGE=templates/default/cover.png" >> $GITHUB_ENV
+            echo "cover_found=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    container:
+      image: iksnae/book-builder:latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Prepare environment
+        run: |
+          mkdir -p build
+          mkdir -p templates
+          mkdir -p build/images
+          
+          # Create language directories based on what exists in the book/ folder
+          for lang in $(ls -1 book/); do
+            if [ -d "book/$lang" ] && [ "$lang" != "images" ]; then
+              echo "Creating build directory for language: $lang"
+              mkdir -p "build/$lang"
+              mkdir -p "build/$lang/images"
+            fi
+          done
+          
+          # Fix permissions on script files
+          chmod +x build.sh
+          find tools/scripts -name "*.sh" -exec chmod +x {} \;
+
+      - name: Check source directories
+        run: |
+          echo "=== Book Content Structure ==="
+          find book -type d | sort
+          
+          # List language directories
+          echo "=== Available Languages ==="
+          for lang in $(ls -1 book/); do
+            if [ -d "book/$lang" ] && [ "$lang" != "images" ]; then
+              echo "Language: $lang"
+              ls -la "book/$lang/" || echo "Empty directory"
+            fi
+          done
+
+      - name: Build book (All languages)
+        run: |
+          echo "Running build script for all languages..."
+          # Run the build script with all languages
+          ./build.sh --all-languages || echo "Build script completed with warnings"
+
+      - name: List build directory contents
+        run: |
+          echo "=== Build Directory Contents ==="
+          ls -la build/
+          
+          # List language-specific directories
+          for lang in $(ls -1 build/); do
+            if [ -d "build/$lang" ] && [ "$lang" != "images" ]; then
+              echo "=== $lang Directory Contents ==="
+              ls -la "build/$lang/" || echo "Directory may be empty"
+            fi
+          done
+          
+          echo "=== Images Directory Contents ==="
+          ls -la build/images/ || echo "Images directory may not exist yet"
+
+      - name: Verify book files
+        run: |
+          # Find all PDF, EPUB, and MOBI files in the build directory
+          echo "=== Checking Generated Files ==="
+          find build/ -name "*.pdf" -exec echo "✅ Found PDF: {}" \; -exec du -h {} \;
+          find build/ -name "*.epub" -exec echo "✅ Found EPUB: {}" \; -exec du -h {} \;
+          find build/ -name "*.mobi" -exec echo "✅ Found MOBI: {}" \; -exec du -h {} \;
+          find build/ -name "*.html" -exec echo "✅ Found HTML: {}" \; -exec du -h {} \;
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-files
+          path: |
+            build/*.pdf
+            build/*.epub
+            build/*.mobi
+            build/*.html
+            build/*.md
+            build/*/
+            build/images/
+
+  release:
+    # Only run release job on main branch
+    if: github.ref == 'refs/heads/main'
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    steps:
+      # Add checkout step so Git commands work properly
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: book-files
+          path: build
+
+      - name: List build directory contents
+        run: |
+          echo "=== Build Directory Contents ==="
+          ls -la build/
+          
+          # List all PDF, EPUB, and MOBI files
+          echo "=== Book File Sizes ==="
+          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" | xargs du -h 2>/dev/null || echo "Some files may be missing"
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/*.pdf
+            build/*.epub
+            build/*.mobi
+            build/*.html
+          tag_name: ${{ needs.setup.outputs.version }}
+          name: ${{ needs.setup.outputs.book_title }} ${{ needs.setup.outputs.version }}
+          body: |
+            # ${{ needs.setup.outputs.book_title }}
+            
+            By ${{ needs.setup.outputs.book_author }}
+            Built on ${{ needs.setup.outputs.date }}
+            
+            ## 📚 Download Options
+            
+            | Format | Description | Link |
+            |--------|-------------|------|
+            | 📄 PDF | For reading on computers and printing | [Download PDF](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ env.FILE_PREFIX }}.pdf) |
+            | 📱 EPUB | For most e-readers and mobile devices | [Download EPUB](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ env.FILE_PREFIX }}.epub) |
+            | 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ env.FILE_PREFIX }}.mobi) |
+            | 🌐 HTML | Read online in your browser | [View HTML](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ env.FILE_PREFIX }}.html) |
+            
+            ## 🔄 Web Version
+            
+            The latest version is also available online at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          draft: false
+
+  deploy:
+    # Only run deploy job on main branch
+    if: github.ref == 'refs/heads/main'
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: book-files
+          path: build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: build
+          branch: gh-pages
