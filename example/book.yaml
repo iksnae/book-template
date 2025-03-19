@@ -1,0 +1,31 @@
+# Book Template - Simple Example Configuration
+
+# Basic Information
+title: "Getting Started with Book Template"
+subtitle: "A Simple Guide to Creating Your First Book"
+author: "Khaos Studio"
+year: "2025"
+language: "en"
+
+# File naming
+file_prefix: "getting-started"
+
+# Output formats
+outputs:
+  pdf: true
+  epub: true
+  html: true
+  mobi: false  # Disabled for simplicity
+
+# PDF settings (using defaults)
+pdf:
+  paper_size: "letter"
+
+# EPUB settings
+epub:
+  cover_image: "art/cover.png"
+
+# Basic metadata
+metadata:
+  description: "A simple guide to creating books with the Book Template system."
+  keywords: "books, writing, publishing, markdown"

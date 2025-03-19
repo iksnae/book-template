@@ -1,0 +1,9 @@
+COVER IMAGE PLACEHOLDER
+
+A simple, clean cover design showing:
+- Title: "Getting Started with Book Template"
+- Subtitle: "A Simple Guide to Creating Your First Book" 
+- Author: "Khaos Studio"
+
+Background: Light color with minimal design elements
+Foreground: Clear, readable text in a professional font
