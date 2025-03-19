@@ -41,7 +41,7 @@ pdf:
 
 # EPUB settings
 epub:
-  cover_image: "art/cover.png"  # Path to cover image
+  cover_image: "book/images/cover.png"  # Path to cover image
   css: "templates/epub/style.css"  # Custom CSS (optional)
   toc_depth: 3  # Table of contents depth
 

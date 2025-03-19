@@ -76,7 +76,10 @@ fi
 LANG_COVER_IMAGE=""
 if [ -f "book/$LANGUAGE/images/cover.png" ]; then
   LANG_COVER_IMAGE="book/$LANGUAGE/images/cover.png"
-  echo "✅ Found language-specific cover image at $LANG_COVER_IMAGE"
+  echo "✅ Found language-specific cover image (PNG) at $LANG_COVER_IMAGE"
+elif [ -f "book/$LANGUAGE/images/cover.jpg" ]; then
+  LANG_COVER_IMAGE="book/$LANGUAGE/images/cover.jpg"
+  echo "✅ Found language-specific cover image (JPG) at $LANG_COVER_IMAGE"
 elif [ -f "build/$LANGUAGE/images/cover.png" ]; then
   LANG_COVER_IMAGE="build/$LANGUAGE/images/cover.png"
   echo "✅ Found language-specific cover image at $LANG_COVER_IMAGE"
@@ -86,9 +89,14 @@ elif [ -n "$EPUB_COVER_IMAGE" ]; then
 fi
 
 # If no cover image is found after all checks, use the one in the build directory
-if [ -z "$LANG_COVER_IMAGE" ] && [ -f "build/images/cover.png" ]; then
-  LANG_COVER_IMAGE="build/images/cover.png"
-  echo "Using cover image found in build directory: $LANG_COVER_IMAGE"
+if [ -z "$LANG_COVER_IMAGE" ]; then
+  if [ -f "build/images/cover.png" ]; then
+    LANG_COVER_IMAGE="build/images/cover.png"
+    echo "Using cover image found in build directory: $LANG_COVER_IMAGE"
+  elif [ -f "build/images/cover.jpg" ]; then
+    LANG_COVER_IMAGE="build/images/cover.jpg"
+    echo "Using JPG cover image found in build directory: $LANG_COVER_IMAGE"
+  fi
 fi
 
 # Build the pandoc command base
