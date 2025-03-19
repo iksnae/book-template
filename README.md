@@ -1,8 +1,8 @@
 ![](./art/image.jpg)
 
-# Book Template
+# DIY Book Starter Kit
 
-A flexible, Markdown-based book writing and publishing system that generates professional quality books in multiple formats.
+A flexible, Markdown-based book writing and publishing system that generates professional quality books in multiple formats. Perfect for authors, educators, and documentation writers who want full control over their publishing process.
 
 ## Features
 
