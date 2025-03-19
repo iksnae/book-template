@@ -13,24 +13,36 @@ A flexible, Markdown-based book writing and publishing system that generates pro
 - Built-in configuration system
 - GitHub Actions integration for automatic builds
 
-## Quick Start
+## Getting Started
 
-1. Clone this repository:
-   ```
-   git clone https://github.com/iksnae/book-template.git my-book
-   cd my-book
-   ```
+### Using the Template (Recommended)
 
-2. Edit the book configuration in `book.yaml`
+This is a template repository. The easiest way to get started is:
 
-3. Write your content in the `book/en/` directory (or other language directories)
+1. Click the **Use this template** button at the top of this page
+2. Name your new repository and create it
+3. Clone your new repository and start customizing
 
-4. Build your book:
+For a quick introduction, check out the [QUICK-START.md](./QUICK-START.md) guide.
+
+### Manual Clone
+
+Alternatively, you can clone this repository directly:
+
+```
+git clone https://github.com/iksnae/book-template.git my-book
+cd my-book
+```
+
+## Next Steps
+
+1. Edit the book configuration in `book.yaml`
+2. Write your content in the `book/en/` directory (or other language directories)
+3. Build your book:
    ```
    ./build.sh
    ```
-
-5. Find your book outputs in the `build/` directory
+4. Find your book outputs in the `build/` directory
 
 ## Directory Structure
 
