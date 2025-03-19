@@ -21,6 +21,8 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    container:
+      image: iksnae/book-builder:latest
     outputs:
       version: ${{ steps.version.outputs.version }}
       date: ${{ steps.version.outputs.date }}
@@ -109,19 +111,9 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     container:
-      image: pandoc/latex:latest  # Use this image for pandoc/latex support
+      image: iksnae/book-builder:latest
     steps:
       - uses: actions/checkout@v4
-      
-      # Install additional dependencies
-      - name: Install dependencies
-        run: |
-          apt-get update && apt-get install -y --no-install-recommends \
-            calibre \
-            xz-utils \
-            python3-pip \
-            nodejs \
-            npm
       
       - name: Prepare environment
         run: |
@@ -220,10 +212,10 @@ jobs:
             
             | Format | Description | Link |
             |--------|-------------|------|
-            | 📄 PDF | For reading on computers and printing | [Download PDF](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.pdf) |
-            | 📱 EPUB | For most e-readers and mobile devices | [Download EPUB](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.epub) |
-            | 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.mobi) |
-            | 🌐 HTML | Read online in your browser | [View HTML](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.html) |
+            | 📄 PDF | For reading on computers and printing | [Download PDF](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.pdf) |
+            | 📱 EPUB | For most e-readers and mobile devices | [Download EPUB](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.epub) |
+            | 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.mobi) |
+            | 🌐 HTML | Read online in your browser | [View HTML](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.html) |
             
             ## 🔄 Web Version
             
