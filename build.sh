@@ -13,6 +13,16 @@ if [ ! -d "tools/scripts" ]; then
   exit 1
 fi
 
+# Create build directory if it doesn't exist
+mkdir -p build
+
+# Create a directory for templates if it doesn't exist
+mkdir -p templates/{pdf,epub,html}/
+
+# Ensure directory structure is in place
+mkdir -p build/images
+mkdir -p book/images
+
 # Make the build script executable
 chmod +x tools/scripts/build.sh
 
