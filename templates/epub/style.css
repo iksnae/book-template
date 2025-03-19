@@ -1,0 +1,226 @@
+/* Book Template Default EPUB Style */
+
+/* Keep EPUB styles simpler for compatibility with e-readers */
+
+/* Basic elements */
+body {
+  font-family: serif;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+  padding: 0 1em;
+  text-align: justify;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: sans-serif;
+  line-height: 1.2;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  text-align: left;
+}
+
+h1 {
+  font-size: 2em;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.3em;
+}
+
+h2 {
+  font-size: 1.5em;
+}
+
+h3 {
+  font-size: 1.3em;
+}
+
+h4 {
+  font-size: 1.2em;
+}
+
+h5 {
+  font-size: 1.1em;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0.8em;
+}
+
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+/* Code blocks */
+pre, code {
+  font-family: monospace;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+code {
+  padding: 0.2em 0.4em;
+}
+
+pre {
+  padding: 0.8em;
+  overflow: auto;
+  line-height: 1.45;
+  margin: 1em 0;
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Blockquotes */
+blockquote {
+  margin: 1em 0;
+  padding: 0 1em;
+  color: #555;
+  border-left: 4px solid #ddd;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+}
+
+figcaption {
+  text-align: center;
+  font-style: italic;
+  font-size: 0.9em;
+  margin-top: 0.5em;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.5em;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+/* Lists */
+ul, ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+li {
+  margin-bottom: 0.5em;
+}
+
+/* Notes and callouts */
+.note, .tip, .warning, .caution {
+  margin: 1em 0;
+  padding: 1em;
+  border-left: 3px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.note:before, .tip:before, .warning:before, .caution:before {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.note:before {
+  content: "Note";
+}
+
+.tip:before {
+  content: "Tip";
+}
+
+.warning:before {
+  content: "Warning";
+}
+
+.caution:before {
+  content: "Caution";
+}
+
+/* Chapter specific */
+.chapter {
+  page-break-before: always;
+}
+
+.title-page {
+  text-align: center;
+  page-break-after: always;
+}
+
+.title-page h1 {
+  font-size: 2.5em;
+  margin-top: 30%;
+  border-bottom: none;
+}
+
+.title-page h2 {
+  font-size: 1.5em;
+  margin-top: 1em;
+  font-weight: normal;
+}
+
+.title-page .author {
+  margin-top: 4em;
+  font-size: 1.2em;
+}
+
+.title-page .date {
+  margin-top: 1em;
+  font-size: 1em;
+}
+
+.title-page .publisher {
+  margin-top: 4em;
+  font-size: 1em;
+}
+
+/* Table of contents */
+.toc {
+  page-break-before: always;
+}
+
+.toc h2 {
+  text-align: center;
+}
+
+.toc ol {
+  padding-left: 1.5em;
+}
+
+.toc li {
+  margin-bottom: 0.5em;
+}
+
+/* Page breaks */
+.page-break {
+  page-break-before: always;
+}
+
+h1 {
+  page-break-before: always;
+}
+
+h1:first-child {
+  page-break-before: avoid;
+}
