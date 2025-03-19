@@ -66,6 +66,18 @@ if [ -z "$COVER_IMAGE" ]; then
     COVER_IMAGE="book/images/cover.png"
     cp "$COVER_IMAGE" build/images/cover.png
     
+  elif [ -f "book/images/cover.jpg" ]; then
+    echo "✅ Found cover image at book/images/cover.jpg"
+    COVER_IMAGE="book/images/cover.jpg"
+    # Convert jpg to png if possible, otherwise just copy it
+    if command -v convert &> /dev/null; then
+      convert "$COVER_IMAGE" build/images/cover.png
+      echo "  Converted JPG to PNG for compatibility"
+    else
+      cp "$COVER_IMAGE" build/images/cover.jpg
+      ln -sf build/images/cover.jpg build/images/cover.png 2>/dev/null || true
+    fi
+    
   else
     # Look in language-specific directories
     for lang in "${LANGUAGES[@]}"; do
@@ -73,6 +85,18 @@ if [ -z "$COVER_IMAGE" ]; then
         echo "✅ Found cover image at book/$lang/images/cover.png"
         COVER_IMAGE="book/$lang/images/cover.png"
         cp "$COVER_IMAGE" build/images/cover.png
+        break
+      elif [ -f "book/$lang/images/cover.jpg" ]; then
+        echo "✅ Found cover image at book/$lang/images/cover.jpg"
+        COVER_IMAGE="book/$lang/images/cover.jpg"
+        # Convert jpg to png if possible, otherwise just copy it
+        if command -v convert &> /dev/null; then
+          convert "$COVER_IMAGE" build/images/cover.png
+          echo "  Converted JPG to PNG for compatibility"
+        else
+          cp "$COVER_IMAGE" build/images/cover.jpg
+          ln -sf build/images/cover.jpg build/images/cover.png 2>/dev/null || true
+        fi
         break
       fi
     done
