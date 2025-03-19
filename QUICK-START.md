@@ -6,11 +6,9 @@ This guide will help you get your book project up and running in just a few minu
 
 After creating your repository from this template:
 
-1. **Clone your new repository locally**:
-   ```bash
-   git clone https://github.com/yourusername/your-book-repo.git
-   cd your-book-repo
-   ```
+1. **Set up your GitHub repository**:
+   - After clicking "Use this template", name your repository (e.g., "my-amazing-book")
+   - Clone your new repository to your computer or edit directly on GitHub
 
 2. **Edit the book configuration**:
    Open `book.yaml` and update:
@@ -34,30 +32,35 @@ After creating your repository from this template:
 3. **Add your book cover**:
    - Replace `art/cover.png` with your book cover (keep the same filename)
 
-## Building Your Book
+## Publishing Your Book
 
-### Using Docker (Recommended)
+The process is fully automated:
 
-```bash
-# Pull the book builder image
-docker pull iksnae/book-builder
+1. **Push your changes to GitHub**:
+   - Commit and push your updates to your repository
+   - GitHub Actions will automatically detect changes and build your book
 
-# Build your book
-docker run --rm -v $(pwd):/book iksnae/book-builder
-```
+2. **Access your books**:
+   - Go to your repository's "Actions" tab to see the build progress
+   - After the build completes, find your formatted books in the "Releases" section
+   - All formats (PDF, EPUB, MOBI, HTML) will be automatically generated
 
-### Using GitHub Actions
+## Available Formats
 
-GitHub Actions will automatically build your book when you push changes to the main branch. The built files will be available as GitHub release assets.
+Each time you publish changes, your book will be available in these formats:
 
-## Output Files
+- PDF: Perfect for printing or professional distribution
+- EPUB: For most e-readers (Apple Books, Kobo, Nook, etc.)
+- MOBI: For Kindle devices
+- HTML: Online web version
 
-After building, you'll find your book in the following formats in the `build/` directory:
+## Sharing Your Book
 
-- PDF: `build/your-book-en.pdf`
-- EPUB: `build/your-book-en.epub`
-- MOBI: `build/your-book-en.mobi` (for Kindle)
-- HTML: `build/your-book-en.html`
+Once built, you can:
+
+1. Share direct links to the release files
+2. Download and distribute the files yourself
+3. Enable GitHub Pages to host the HTML version online
 
 ## Next Steps
 
