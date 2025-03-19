@@ -10,7 +10,7 @@ on:
       - 'build.sh'
       - 'tools/**'
       - '.github/workflows/build-book.yml'
-      - 'book.yaml'  # New configuration file
+      - 'book.yaml'  # Configuration file
   workflow_dispatch:  # Allow manual triggering
 
 # Permissions for creating releases and GitHub Pages
@@ -27,6 +27,7 @@ jobs:
       cover_found: ${{ steps.cover.outputs.cover_found }}
       book_title: ${{ steps.config.outputs.book_title }}
       book_author: ${{ steps.config.outputs.book_author }}
+      file_prefix: ${{ steps.config.outputs.file_prefix }}
     steps:
       - uses: actions/checkout@v4
 
@@ -37,22 +38,24 @@ jobs:
           if [ -f "book.yaml" ]; then
             echo "Using configuration from book.yaml"
             # Extract book title
-            BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//')
+            BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
             echo "book_title=$BOOK_TITLE" >> $GITHUB_OUTPUT
             echo "BOOK_TITLE=$BOOK_TITLE" >> $GITHUB_ENV
             
             # Extract book author
-            BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//')
+            BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
             echo "book_author=$BOOK_AUTHOR" >> $GITHUB_OUTPUT
             echo "BOOK_AUTHOR=$BOOK_AUTHOR" >> $GITHUB_ENV
             
             # Extract file prefix
-            FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//')
+            FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
             if [ -n "$FILE_PREFIX" ]; then
+              echo "file_prefix=$FILE_PREFIX" >> $GITHUB_OUTPUT
               echo "FILE_PREFIX=$FILE_PREFIX" >> $GITHUB_ENV
             else
               # Default to lowercase book title with hyphens
               FILE_PREFIX=$(echo "$BOOK_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')
+              echo "file_prefix=$FILE_PREFIX" >> $GITHUB_OUTPUT
               echo "FILE_PREFIX=$FILE_PREFIX" >> $GITHUB_ENV
             fi
           else
@@ -61,6 +64,7 @@ jobs:
             echo "BOOK_TITLE=My Book" >> $GITHUB_ENV
             echo "book_author=Author Name" >> $GITHUB_OUTPUT
             echo "BOOK_AUTHOR=Author Name" >> $GITHUB_ENV
+            echo "file_prefix=my-book" >> $GITHUB_OUTPUT
             echo "FILE_PREFIX=my-book" >> $GITHUB_ENV
           fi
           
@@ -104,13 +108,24 @@ jobs:
   build:
     needs: setup
     runs-on: ubuntu-latest
+    container:
+      image: pandoc/latex:latest  # Use this image for pandoc/latex support
     steps:
       - uses: actions/checkout@v4
+      
+      # Install additional dependencies
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y --no-install-recommends \
+            calibre \
+            xz-utils \
+            python3-pip \
+            nodejs \
+            npm
       
       - name: Prepare environment
         run: |
           mkdir -p build
-          mkdir -p templates
           mkdir -p build/images
           
           # Create language directories based on what exists in the book/ folder
@@ -124,61 +139,12 @@ jobs:
           
           # Fix permissions on script files
           chmod +x build.sh
-          find tools/scripts -name "*.sh" -exec chmod +x {} \; 2>/dev/null || echo "No scripts found, will be added in full implementation"
+          find tools/scripts -name "*.sh" -exec chmod +x {} \;
 
-      - name: Create sample files for testing
+      - name: Run build script
         run: |
-          echo "Creating sample book files for testing..."
-          
-          # Create sample PDF
-          echo "Sample PDF content" > build/book-template.pdf
-          echo "✅ Created sample PDF"
-          
-          # Create sample EPUB
-          echo "Sample EPUB content" > build/book-template.epub
-          echo "✅ Created sample EPUB"
-          
-          # Create sample MOBI
-          echo "Sample MOBI content" > build/book-template.mobi
-          echo "✅ Created sample MOBI"
-          
-          # Create sample HTML
-          cat > build/book-template.html << EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Book Template</title>
-          </head>
-          <body>
-            <h1>Book Template</h1>
-            <p>This is a sample HTML output.</p>
-          </body>
-          </html>
-          EOF
-          echo "✅ Created sample HTML"
-          
-          # Create sample index.html
-          cp build/book-template.html build/index.html
-          echo "✅ Created sample index.html"
-          
-          # Create sample language files if needed
-          for lang in $(ls -1 build/ 2>/dev/null); do
-            if [ -d "build/$lang" ] && [ "$lang" != "images" ]; then
-              cp build/index.html "build/$lang/index.html"
-              echo "✅ Created sample index.html for $lang"
-            fi
-          done
-          
-          echo "✅ Sample files created successfully"
-
-      - name: Run build script if it exists
-        run: |
-          if [ -x "tools/scripts/build.sh" ]; then
-            echo "Running build script..."
-            ./build.sh || echo "Build script completed with warnings"
-          else
-            echo "⚠️ Build script not found or not executable, using sample files instead"
-          fi
+          echo "Running build script..."
+          ./build.sh --all-languages || echo "Build script completed with warnings"
 
       - name: List build directory contents
         run: |
@@ -192,6 +158,10 @@ jobs:
               ls -la "build/$lang/" || echo "Directory may be empty"
             fi
           done
+          
+          # Show file sizes for main book formats
+          echo "=== Book File Sizes ==="
+          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | xargs du -h 2>/dev/null || echo "Some files may be missing"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -250,10 +220,10 @@ jobs:
             
             | Format | Description | Link |
             |--------|-------------|------|
-            | 📄 PDF | For reading on computers and printing | [Download PDF](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/book-template.pdf) |
-            | 📱 EPUB | For most e-readers and mobile devices | [Download EPUB](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/book-template.epub) |
-            | 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/book-template.mobi) |
-            | 🌐 HTML | Read online in your browser | [View HTML](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/book-template.html) |
+            | 📄 PDF | For reading on computers and printing | [Download PDF](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.pdf) |
+            | 📱 EPUB | For most e-readers and mobile devices | [Download EPUB](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.epub) |
+            | 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.mobi) |
+            | 🌐 HTML | Read online in your browser | [View HTML](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'book-template' }}.html) |
             
             ## 🔄 Web Version
             
