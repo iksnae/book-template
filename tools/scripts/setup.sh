@@ -21,6 +21,7 @@ done
 
 # Create templates directory if it doesn't exist
 mkdir -p templates
+mkdir -p templates/default
 
 # Check that source book directories exist
 echo "📚 Verifying language directories..."
@@ -78,14 +79,22 @@ if [ -z "$COVER_IMAGE" ]; then
   fi
 fi
 
-# Still no cover image found - check for default template
+# Still no cover image found - create a default template placeholder
 if [ -z "$COVER_IMAGE" ]; then
+  # Check for default template cover
   if [ -f "templates/default/cover.png" ]; then
     echo "⚠️ No custom cover image found. Using default template cover."
     COVER_IMAGE="templates/default/cover.png"
     cp "$COVER_IMAGE" build/images/cover.png
   else
+    # Create a simple text file indicating no cover image
     echo "⚠️ No cover image found. Building book without cover."
+    
+    # Create placeholder text file for cover
+    echo "# No Cover Image Available" > build/images/cover-placeholder.txt
+    echo "This book was built without a cover image." >> build/images/cover-placeholder.txt
+    echo "To add a cover image, place cover.png in the art/ directory" >> build/images/cover-placeholder.txt
+    echo "or specify a path in the book.yaml configuration." >> build/images/cover-placeholder.txt
   fi
 fi
 
