@@ -1,115 +1,160 @@
 # Book Template
 
-A complete starter kit for writing and publishing books in multiple formats using Markdown, Pandoc, and GitHub Actions.
+A flexible, Markdown-based book writing and publishing system that generates professional quality books in multiple formats.
 
 ## Features
 
-- **Multi-format Publishing**: Generate PDF, EPUB, MOBI, and HTML versions of your book from a single source
-- **Multilingual Support**: Write in multiple languages with full internationalization support
-- **Automated Builds**: GitHub Actions workflow for continuous integration and publishing
-- **Responsive Design**: HTML output works on all devices
-- **Customizable**: Extensively customizable templates for all output formats
-- **Minimal Setup**: Start writing immediately with minimal technical knowledge
-- **Docker Support**: Consistent builds using Docker container
-- **Releases & Distribution**: Automatic GitHub releases and GitHub Pages deployment
+- Write your book in simple Markdown format
+- Generate PDF, EPUB, MOBI, and HTML outputs
+- Support for multiple languages
+- Customizable templates and styling
+- Built-in configuration system
+- GitHub Actions integration for automatic builds
 
 ## Quick Start
 
-1. **Create a new repository** from this template by clicking the "Use this template" button
-2. **Clone your new repository** to your local machine
-3. **Start writing** your book in the `book/en/chapter-01` directory (or create new chapters)
-4. **Commit and push** your changes to GitHub
-5. **GitHub Actions will automatically build** your book in all formats
-6. **Download the artifacts** from the GitHub Actions workflow or the latest release
+1. Clone this repository:
+   ```
+   git clone https://github.com/iksnae/book-template.git my-book
+   cd my-book
+   ```
 
-That's it! You'll have a beautifully formatted book in multiple formats.
+2. Edit the book configuration in `book.yaml`
+
+3. Write your content in the `book/en/` directory (or other language directories)
+
+4. Build your book:
+   ```
+   ./build.sh
+   ```
+
+5. Find your book outputs in the `build/` directory
 
 ## Directory Structure
 
 ```
-your-book-repo/
-├── book/                  # Your book content
+.
+├── art/                   # Cover images and artwork
+├── book/                  # Book content in Markdown
 │   ├── en/                # English content
-│   │   ├── chapter-01/    # Chapter files in markdown
-│   │   ├── chapter-02/
+│   │   ├── chapter-01/    # First chapter
+│   │   │   ├── 00-introduction.md
+│   │   │   ├── 01-section.md
+│   │   │   └── images/    # Chapter-specific images
+│   │   ├── chapter-02/    # Second chapter
 │   │   └── images/        # Language-specific images
-│   ├── es/                # Spanish (or other languages)
-│   └── images/            # Global images
-├── art/                   # Cover and promotional art
-├── templates/             # Customizable templates
-├── tools/                 # Build scripts and utilities
-├── build.sh               # Main build script
-└── README.md              # Project documentation
+│   └── es/                # Spanish content (optional)
+├── build/                 # Output directory (created during build)
+├── templates/             # Templates for output formats
+│   ├── default/           # Default assets and fallbacks
+│   ├── epub/              # EPUB-specific templates
+│   ├── html/              # HTML-specific templates
+│   └── pdf/               # PDF/LaTeX templates
+└── tools/                 # Build tools and scripts
+    └── scripts/           # Build scripts
 ```
 
-## Writing Your Book
+## Configuration
 
-1. Start by creating or editing markdown files in the `book/en/chapter-01` directory
-2. Files are processed in alphanumeric order, so name them accordingly (e.g., `00-introduction.md`, `01-first-section.md`)
-3. Use standard markdown formatting with support for:
-   - Headers (# for chapter titles, ## for sections, etc.)
-   - Images, links, tables
-   - Code blocks with syntax highlighting
-   - And more!
+The `book.yaml` file controls all aspects of your book build:
 
-## Building Locally
+```yaml
+# Basic Information
+title: "Your Book Title"
+subtitle: "An Optional Subtitle"
+author: "Your Name"
+publisher: "Your Publisher"
+language: "en"  # Main language code
 
-You can build your book locally using Docker:
+# File naming
+file_prefix: "your-book"  # Used for output filenames
 
-```bash
-# Pull the book-builder image
-docker pull iksnae/book-builder:latest
+# Output formats to generate
+outputs:
+  pdf: true
+  epub: true
+  mobi: true
+  html: true
 
-# Run the build script inside the container
-docker run --rm -v $(pwd):/workspace iksnae/book-builder:latest /workspace/build.sh
+# Languages to build
+languages:
+  - "en"  # English
+  # - "es"  # Spanish (uncomment to add)
+
+# Format-specific settings
+pdf:
+  paper_size: "letter"  # letter, a4, etc.
+  template: "templates/pdf/default.latex"
+  
+epub:
+  cover_image: "art/cover.png"
+  css: "templates/epub/style.css"
+
+html:
+  template: "templates/html/default.html"
+  css: "templates/html/style.css"
 ```
 
-Or directly if you have the required dependencies installed:
+## Writing Content
 
-```bash
-./build.sh
+Content is written in standard Markdown with a few conventions:
+
+1. **Chapter Structure**: Create directories named `chapter-XX` where XX is a number (01, 02, etc.)
+2. **Chapter Introduction**: Use `00-introduction.md` for chapter introductions
+3. **Content Sections**: Name content files with numeric prefixes (e.g., `01-section.md`, `02-section.md`)
+4. **Images**: Place images in the `images/` directory within each chapter or language directory
+
+## Build Options
+
+The build script accepts several options:
+
+```
+./build.sh [--all-languages] [--lang=XX] [--skip-pdf] [--skip-epub] [--skip-mobi] [--skip-html]
 ```
 
-## Customization
+Options:
+- `--all-languages`: Build all languages defined in book.yaml
+- `--lang=XX`: Build only the specified language (e.g., `--lang=es` for Spanish)
+- `--skip-pdf`, `--skip-epub`, etc.: Skip generating specific output formats
 
-This template is highly customizable. See [CUSTOMIZATION.md](CUSTOMIZATION.md) for complete details on:
+## Output Customization
 
-- Changing book metadata (title, author, etc.)
-- Customizing page layout and styling
-- Adding custom fonts
-- Modifying the build process
-- And more!
+### PDF/LaTeX
 
-## Multilingual Support
+Edit `templates/pdf/default.latex` to customize the PDF appearance.
 
-To add a new language:
+### EPUB
 
-1. Create a new directory under `book/` with the language code (e.g., `book/fr/` for French)
-2. Copy or create content following the same structure as the English version
-3. The build system will automatically detect and build all languages
+Edit `templates/epub/style.css` to customize the EPUB styling.
 
-See [docs/multilingual.md](docs/multilingual.md) for more details.
+### HTML
 
-## GitHub Pages
+Edit `templates/html/default.html` and `templates/html/style.css` to customize the HTML output.
 
-Your book's HTML version will be automatically deployed to GitHub Pages. Access it at:
-`https://yourusername.github.io/your-repo-name/`
+## Requirements
 
-## Examples
+To build books locally, you'll need:
 
-See the [example/](example/) directory for a complete example book.
+1. **Docker** (recommended approach):
+   - Use the `iksnae/book-builder` Docker image which contains all dependencies
 
-## Documentation
+2. **Manual Installation**:
+   - Pandoc (document conversion)
+   - LaTeX (for PDF generation)
+   - Calibre's ebook-convert tool (for MOBI generation)
 
-- [Getting Started Guide](docs/getting-started.md)
-- [Customization Guide](docs/customization.md)
-- [Multilingual Guide](docs/multilingual.md)
-- [Troubleshooting](docs/troubleshooting.md)
+## GitHub Actions Integration
 
-## About This Template
+This template includes GitHub Actions workflows that automatically build your book when you push changes. The workflow:
 
-This template was created by extracting and enhancing the build system from the [Actual Intelligence](https://github.com/iksnae/actual-intelligence) book project, a practical guide to using AI in everyday life.
+1. Builds all languages and formats
+2. Creates GitHub releases with book files
+3. Deploys the HTML version to GitHub Pages
 
 ## License
 
-This template is released under the MIT License. See [LICENSE](LICENSE) for details.
+This template is open source and available under the MIT License.
+
+## Credits
+
+Developed by Khaos Studios.
