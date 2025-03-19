@@ -8,14 +8,16 @@ Create and publish your own professional-looking books with this easy-to-use sta
 
 We believe book creation should be simple: **Write your content, Push to GitHub, and Forget about the technical details**. The system automatically handles everything else, delivering beautifully formatted books ready for distribution.
 
-## Sample Books
+## 📚 Sample Books
 
-See what your books will look like:
+<div align="center">
 
-- [📕 Download Sample PDF](https://github.com/iksnae/book-template/releases/latest/download/book-template-en.pdf)
-- [📘 Download Sample EPUB](https://github.com/iksnae/book-template/releases/latest/download/book-template-en.epub)
-- [📙 Download Sample MOBI](https://github.com/iksnae/book-template/releases/latest/download/book-template-en.mobi)
-- [🌐 View Sample HTML](https://iksnae.github.io/book-template/)
+[![Download PDF](https://img.shields.io/badge/Download-PDF%20Version-blue?style=for-the-badge&logo=adobe-acrobat-reader)](https://github.com/iksnae/book-template/releases/latest/download/book-template.pdf)
+[![Download EPUB](https://img.shields.io/badge/Download-EPUB%20Version-green?style=for-the-badge&logo=apple)](https://github.com/iksnae/book-template/releases/latest/download/book-template.epub)
+[![Download MOBI](https://img.shields.io/badge/Download-Kindle%20Version-orange?style=for-the-badge&logo=amazon)](https://github.com/iksnae/book-template/releases/latest/download/book-template.mobi)
+[![Read Online](https://img.shields.io/badge/Read-Web%20Version-purple?style=for-the-badge&logo=html5)](https://iksnae.github.io/book-template/)
+
+</div>
 
 ## Why Use This Starter Kit?
 
@@ -66,11 +68,16 @@ The process happens automatically without any intervention:
 
 1. Push your changes to GitHub
 2. GitHub Actions will automatically build all formats
-3. Your books appear in the releases section with direct download links:
-   - `https://github.com/yourusername/your-repo/releases/latest/download/your-book-en.pdf`
-   - `https://github.com/yourusername/your-repo/releases/latest/download/your-book-en.epub`
-   - `https://github.com/yourusername/your-repo/releases/latest/download/your-book-en.mobi`
-   - Web version available at `https://yourusername.github.io/your-repo/`
+3. Your books will be available with beautiful download buttons like these:
+
+<div align="center">
+
+[![Download PDF](https://img.shields.io/badge/Download-PDF%20Version-blue?style=for-the-badge&logo=adobe-acrobat-reader)](https://github.com/yourusername/your-repo/releases/latest/download/your-book.pdf)
+[![Download EPUB](https://img.shields.io/badge/Download-EPUB%20Version-green?style=for-the-badge&logo=apple)](https://github.com/yourusername/your-repo/releases/latest/download/your-book.epub)
+[![Download MOBI](https://img.shields.io/badge/Download-Kindle%20Version-orange?style=for-the-badge&logo=amazon)](https://github.com/yourusername/your-repo/releases/latest/download/your-book.mobi)
+[![Read Online](https://img.shields.io/badge/Read-Web%20Version-purple?style=for-the-badge&logo=html5)](https://yourusername.github.io/your-repo/)
+
+</div>
 
 Just write and push - we handle the rest!
 
