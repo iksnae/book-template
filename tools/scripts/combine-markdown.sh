@@ -12,6 +12,9 @@ BOOK_TITLE=${3:-"My Book"}
 BOOK_SUBTITLE=${4:-"A Book Built with the Template System"}
 
 echo "📝 Combining markdown files for $LANGUAGE..."
+echo "  - Language: $LANGUAGE"
+echo "  - Output: $OUTPUT_PATH"
+echo "  - Title: $BOOK_TITLE"
 
 # Make sure the parent directory exists
 mkdir -p "$(dirname "$OUTPUT_PATH")"
@@ -80,6 +83,17 @@ cat >> "$OUTPUT_PATH" << EOF
 
 EOF
 
+# Check for language directory structure
+echo "Checking book/$LANGUAGE directory..."
+if [ ! -d "book/$LANGUAGE" ]; then
+  echo "❌ Error: Language directory book/$LANGUAGE does not exist!"
+  exit 1
+fi
+
+# List all files to be processed (for debugging)
+echo "Files to be processed:"
+find "book/$LANGUAGE" -type f -name "*.md" | sort
+
 # Check for multiple directory structures
 # First, look for the chapter-based structure (chapter-01, chapter-02, etc.)
 CHAPTER_DIRS=$(find "book/$LANGUAGE" -type d -name "chapter-*" 2>/dev/null | sort -V)
@@ -103,6 +117,7 @@ if [ -n "$CHAPTER_DIRS" ]; then
     if [ -f "$chapter_dir/00-introduction.md" ]; then
       echo "Adding chapter introduction from $chapter_dir/00-introduction.md"
       cat "$chapter_dir/00-introduction.md" >> "$OUTPUT_PATH"
+      echo -e "\n\n" >> "$OUTPUT_PATH"
     fi
     
     # Process all section files in correct numeric order
@@ -173,4 +188,32 @@ if command -v wc &> /dev/null; then
   WORD_COUNT=$(wc -w < "$OUTPUT_PATH")
   CHAR_COUNT=$(wc -c < "$OUTPUT_PATH")
   echo "📊 Word count: $WORD_COUNT words, $CHAR_COUNT characters"
+fi
+
+# Verify the output file exists and has content
+if [ ! -s "$OUTPUT_PATH" ]; then
+  echo "⚠️ Warning: The combined Markdown file is empty!"
+  
+  # Create a minimal file with just the metadata
+  cat > "$OUTPUT_PATH" << EOF
+---
+title: "$BOOK_TITLE"
+subtitle: "$BOOK_SUBTITLE"
+author: "$BOOK_AUTHOR"
+publisher: "$PUBLISHER"
+language: "$LANGUAGE"
+toc: true
+---
+
+# $BOOK_TITLE
+
+## $BOOK_SUBTITLE
+
+By $BOOK_AUTHOR
+
+This book appears to be empty or the Markdown files could not be processed correctly.
+Please check the directory structure and ensure there are valid Markdown files in the correct locations.
+EOF
+
+  echo "Created minimal fallback content to prevent build failures."
 fi
