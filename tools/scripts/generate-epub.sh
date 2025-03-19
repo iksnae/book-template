@@ -85,6 +85,12 @@ elif [ -n "$EPUB_COVER_IMAGE" ]; then
   echo "Using configured cover image at $LANG_COVER_IMAGE"
 fi
 
+# If no cover image is found after all checks, use the one in the build directory
+if [ -z "$LANG_COVER_IMAGE" ] && [ -f "build/images/cover.png" ]; then
+  LANG_COVER_IMAGE="build/images/cover.png"
+  echo "Using cover image found in build directory: $LANG_COVER_IMAGE"
+fi
+
 # Build the pandoc command base
 PANDOC_CMD="pandoc \"$INPUT_FILE\" -o \"$OUTPUT_FILE\" --toc --toc-depth=$TOC_DEPTH"
 
@@ -100,9 +106,11 @@ if [ -n "$CSS_FILE" ] && [ -f "$CSS_FILE" ]; then
 fi
 
 # Add cover image if available
-if [ -n "$LANG_COVER_IMAGE" ]; then
+if [ -n "$LANG_COVER_IMAGE" ] && [ -f "$LANG_COVER_IMAGE" ]; then
   echo "Including cover image in EPUB: $LANG_COVER_IMAGE"
   PANDOC_CMD="$PANDOC_CMD --epub-cover-image=\"$LANG_COVER_IMAGE\""
+else
+  echo "⚠️ No cover image found for EPUB. Building without cover."
 fi
 
 # Add resource path
