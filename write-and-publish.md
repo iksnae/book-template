@@ -88,6 +88,9 @@ Now that you understand the basics, you're ready to start writing your book! Her
 
 Happy writing!
 
+
+
+
 <!-- Start of section: 01-installation.md -->
 
 ## Setting Up Your Environment
