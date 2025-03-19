@@ -1,0 +1,104 @@
+% Book Template Default LaTeX Template
+
+\documentclass[$if(fontsize)$$fontsize$,$endif$$if(lang)$$babel-lang$,$endif$$if(papersize)$$papersize$,$endif$$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
+
+% Core packages
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+% Configure fonts
+\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+$if(mainfont)$
+    \setmainfont[$for(mainfontoptions)$$mainfontoptions$$sep$,$endfor$]{$mainfont$}
+$endif$
+$if(sansfont)$
+    \setsansfont[$for(sansfontoptions)$$sansfontoptions$$sep$,$endfor$]{$sansfont$}
+$endif$
+$if(monofont)$
+    \setmonofont[Mapping=tex-ansi$if(monofontoptions)$,$for(monofontoptions)$$monofontoptions$$sep$,$endfor$$endif$]{$monofont$}
+$endif$
+
+% Page geometry
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+
+% Hyperlink settings
+\hypersetup{
+    colorlinks=true,
+    linkcolor=$if(linkcolor)$$linkcolor$$else$blue$endif$,
+    citecolor=$if(citecolor)$$citecolor$$else$blue$endif$,
+    urlcolor=$if(urlcolor)$$urlcolor$$else$blue$endif$,
+    breaklinks=true,
+    pdfauthor={$author$},
+    pdftitle={$title$},
+    $if(subtitle)$pdfsubject={$subtitle$},$endif$
+    pdfkeywords={$for(keywords)$$keywords$$sep$, $endfor$},
+    pdfborder={0 0 0}
+}
+
+% Headers and footers
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\textit{$title$}}
+\fancyhead[LO]{\textit{$if(author)$$author$$endif$}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Title formatting
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{50pt}{40pt}
+
+% Begin document
+\begin{document}
+
+% Title page
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    
+    {\huge\bfseries $title$\par}
+    \vspace{1cm}
+    $if(subtitle)$
+    {\Large $subtitle$\par}
+    \vspace{1.5cm}
+    $endif$
+    
+    {\Large $author$\par}
+    
+    \vfill
+    
+    $if(publisher)$
+    {\large $publisher$\par}
+    $endif$
+    
+    $if(date)$
+    {\large $date$\par}
+    $endif$
+    
+\end{titlepage}
+
+% Table of contents
+$if(toc)$
+{
+\hypersetup{linkcolor=$if(toccolor)$$toccolor$$else$black$endif$}
+\setcounter{tocdepth}{$toc-depth$}
+\tableofcontents
+}
+$endif$
+
+% Main content
+$body$
+
+\end{document}
