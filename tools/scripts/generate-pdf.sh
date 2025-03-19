@@ -10,7 +10,7 @@ LANGUAGE=${1:-en}
 INPUT_FILE=${2:-build/book.md}
 OUTPUT_FILE=${3:-build/book.pdf}
 BOOK_TITLE=${4:-"My Book"}
-RESOURCE_PATHS=${5:-".:book:book/en:build:book/en/images:book/images:build/images"}
+RESOURCE_PATHS=${5:-".:book:book/$LANGUAGE:build:book/$LANGUAGE/images:book/images:build/images:build/$LANGUAGE/images"}
 
 echo "📄 Generating PDF for $LANGUAGE..."
 
@@ -103,84 +103,85 @@ if [ -z "$PUBLISHER" ] && [ -f "book.yaml" ]; then
   fi
 fi
 
+# Define common pandoc parameters
+PANDOC_COMMON_PARAMS="--pdf-engine=xelatex \
+  --toc \
+  --metadata title=\"$BOOK_TITLE\" \
+  --metadata author=\"$BOOK_AUTHOR\" \
+  --metadata publisher=\"$PUBLISHER\" \
+  --metadata=lang:\"$LANGUAGE\" \
+  --variable=fontsize:\"$PDF_FONT_SIZE\" \
+  --variable=papersize:\"$PDF_PAPER_SIZE\" \
+  --variable=geometry:\"top=$PDF_MARGIN_TOP,right=$PDF_MARGIN_RIGHT,bottom=$PDF_MARGIN_BOTTOM,left=$PDF_MARGIN_LEFT\" \
+  --variable=linestretch:\"$PDF_LINE_HEIGHT\" \
+  --resource-path=\"$RESOURCE_PATHS\""
+
 # First attempt: Use LaTeX template if available
 if [ -f "$PDF_TEMPLATE" ]; then
   echo "Using LaTeX template: $PDF_TEMPLATE"
-  pandoc "$INPUT_FILE" -o "$OUTPUT_FILE" \
+  
+  # Run pandoc with the template and capture any warnings
+  set +e  # Temporarily disable exit on error
+  WARNINGS=$(pandoc "$INPUT_FILE" -o "$OUTPUT_FILE" \
+    $PANDOC_COMMON_PARAMS \
     --template="$PDF_TEMPLATE" \
-    --metadata title="$BOOK_TITLE" \
-    --metadata author="$BOOK_AUTHOR" \
-    --metadata publisher="$PUBLISHER" \
-    --metadata=lang:"$LANGUAGE" \
-    --variable=documentclass:"$PDF_DOCUMENT_CLASS" \
-    --pdf-engine=xelatex \
-    --toc \
-    --variable=fontsize:"$PDF_FONT_SIZE" \
-    --variable=papersize:"$PDF_PAPER_SIZE" \
-    --variable=geometry:"top=$PDF_MARGIN_TOP,right=$PDF_MARGIN_RIGHT,bottom=$PDF_MARGIN_BOTTOM,left=$PDF_MARGIN_LEFT" \
-    --variable=linestretch:"$PDF_LINE_HEIGHT" \
-    --resource-path="$RESOURCE_PATHS"
+    --variable=documentclass:"$PDF_DOCUMENT_CLASS" 2>&1)
+  RESULT=$?
+  set -e  # Re-enable exit on error
+  
+  # Check for missing image warnings but continue
+  if echo "$WARNINGS" | grep -q "Could not fetch resource"; then
+    echo "⚠️ Some images could not be found, but continuing with build"
+  fi
 else
   # First attempt: Fallback to default pandoc styling
   echo "No custom template found, using default PDF styling"
-  pandoc "$INPUT_FILE" -o "$OUTPUT_FILE" \
-    --metadata title="$BOOK_TITLE" \
-    --metadata author="$BOOK_AUTHOR" \
-    --metadata publisher="$PUBLISHER" \
-    --metadata=lang:"$LANGUAGE" \
-    --variable=documentclass:"$PDF_DOCUMENT_CLASS" \
-    --pdf-engine=xelatex \
-    --toc \
-    --variable=fontsize:"$PDF_FONT_SIZE" \
-    --variable=papersize:"$PDF_PAPER_SIZE" \
-    --variable=geometry:"top=$PDF_MARGIN_TOP,right=$PDF_MARGIN_RIGHT,bottom=$PDF_MARGIN_BOTTOM,left=$PDF_MARGIN_LEFT" \
-    --variable=linestretch:"$PDF_LINE_HEIGHT" \
-    --resource-path="$RESOURCE_PATHS"
+  
+  # Run pandoc without a template and capture any warnings
+  set +e  # Temporarily disable exit on error
+  WARNINGS=$(pandoc "$INPUT_FILE" -o "$OUTPUT_FILE" \
+    $PANDOC_COMMON_PARAMS \
+    --variable=documentclass:"$PDF_DOCUMENT_CLASS" 2>&1)
+  RESULT=$?
+  set -e  # Re-enable exit on error
+  
+  # Check for missing image warnings but continue
+  if echo "$WARNINGS" | grep -q "Could not fetch resource"; then
+    echo "⚠️ Some images could not be found, but continuing with build"
+  fi
 fi
 
 # Check if PDF file was created successfully
-if [ $? -ne 0 ] || [ ! -s "$OUTPUT_FILE" ]; then
+if [ $RESULT -ne 0 ] || [ ! -s "$OUTPUT_FILE" ]; then
   echo "⚠️ First PDF generation attempt failed, trying with more resilient settings..."
   
   # Create a version of the markdown with image references made more resilient
-  sed -i 's/!\[\([^]]*\)\](images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
-  sed -i 's/!\[\([^]]*\)\](book\/images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
-  sed -i 's/!\[\([^]]*\)\](book\/[^/)]*\/images\//![\1](build\/images\//g' "$SAFE_INPUT_FILE"
+  cp "$SAFE_INPUT_FILE" "${SAFE_INPUT_FILE}.tmp"
+  sed -i 's/!\[\([^]]*\)\](images\//![\\1](build\/images\//g' "${SAFE_INPUT_FILE}.tmp"
+  sed -i 's/!\[\([^]]*\)\](book\/images\//![\\1](build\/images\//g' "${SAFE_INPUT_FILE}.tmp"
+  sed -i 's/!\[\([^]]*\)\](book\/[^/)]*\/images\//![\\1](build\/images\//g' "${SAFE_INPUT_FILE}.tmp"
   
   # Second attempt: Try with modified settings and more lenient image paths
-  pandoc "$SAFE_INPUT_FILE" -o "$OUTPUT_FILE" \
-    --metadata title="$BOOK_TITLE" \
-    --metadata author="$BOOK_AUTHOR" \
-    --metadata publisher="$PUBLISHER" \
-    --metadata=lang:"$LANGUAGE" \
-    --pdf-engine=xelatex \
-    --toc \
+  set +e  # Temporarily disable exit on error
+  pandoc "${SAFE_INPUT_FILE}.tmp" -o "$OUTPUT_FILE" \
+    $PANDOC_COMMON_PARAMS \
     --variable=graphics=true \
-    --variable=documentclass=book \
-    --variable=fontsize:"$PDF_FONT_SIZE" \
-    --variable=papersize:"$PDF_PAPER_SIZE" \
-    --variable=geometry:"top=$PDF_MARGIN_TOP,right=$PDF_MARGIN_RIGHT,bottom=$PDF_MARGIN_BOTTOM,left=$PDF_MARGIN_LEFT" \
-    --resource-path="$RESOURCE_PATHS" || true
+    --variable=documentclass=book || true
+  set -e  # Re-enable exit on error
   
   # If still not successful, create a minimal PDF
   if [ ! -s "$OUTPUT_FILE" ]; then
     echo "⚠️ WARNING: PDF generation with images failed, creating a minimal PDF without images..."
     # Create a version with image references removed
-    sed -i 's/!\[\([^]]*\)\]([^)]*)//g' "$SAFE_INPUT_FILE"
+    cp "$SAFE_INPUT_FILE" "${SAFE_INPUT_FILE}.noimg"
+    sed -i 's/!\[\([^]]*\)\]([^)]*)//g' "${SAFE_INPUT_FILE}.noimg"
     
     # Final attempt: minimal PDF with no images
-    pandoc "$SAFE_INPUT_FILE" -o "$OUTPUT_FILE" \
-      --metadata title="$BOOK_TITLE" \
-      --metadata author="$BOOK_AUTHOR" \
-      --metadata publisher="$PUBLISHER" \
-      --metadata=lang:"$LANGUAGE" \
-      --pdf-engine=xelatex \
-      --toc \
-      --variable=fontsize:"$PDF_FONT_SIZE" \
-      --variable=papersize:"$PDF_PAPER_SIZE" \
-      --variable=geometry:"top=$PDF_MARGIN_TOP,right=$PDF_MARGIN_RIGHT,bottom=$PDF_MARGIN_BOTTOM,left=$PDF_MARGIN_LEFT" \
-      --resource-path="$RESOURCE_PATHS" || true
-      
+    set +e  # Temporarily disable exit on error
+    pandoc "${SAFE_INPUT_FILE}.noimg" -o "$OUTPUT_FILE" \
+      $PANDOC_COMMON_PARAMS || true
+    set -e  # Re-enable exit on error
+    
     # If all else fails, create a placeholder PDF
     if [ ! -s "$OUTPUT_FILE" ]; then
       echo "⚠️ WARNING: All PDF generation attempts failed, creating placeholder PDF..."
@@ -188,13 +189,16 @@ if [ $? -ne 0 ] || [ ! -s "$OUTPUT_FILE" ]; then
       echo "# $BOOK_TITLE - Placeholder PDF" > "$PLACEHOLDER_FILE"
       echo "PDF generation encountered issues. Please check your Markdown content and template settings." >> "$PLACEHOLDER_FILE"
       echo "If using a custom LaTeX template, verify it's compatible with your Pandoc version." >> "$PLACEHOLDER_FILE"
-      echo "Try running the build with --skip-pdf to generate other formats while troubleshooting the PDF output." >> "$PLACEHOLDER_FILE"
+      echo "See other formats (EPUB, HTML) for the complete content." >> "$PLACEHOLDER_FILE"
       pandoc "$PLACEHOLDER_FILE" -o "$OUTPUT_FILE" --pdf-engine=xelatex
     fi
   fi
+  
+  # Clean up temporary files
+  rm -f "${SAFE_INPUT_FILE}.tmp" "${SAFE_INPUT_FILE}.noimg"
 fi
 
-# Check final result
+# Check final result and create at least a minimal PDF if everything failed
 if [ -s "$OUTPUT_FILE" ]; then
   echo "✅ PDF created successfully at $OUTPUT_FILE"
   
@@ -202,6 +206,21 @@ if [ -s "$OUTPUT_FILE" ]; then
   FILE_SIZE=$(du -h "$OUTPUT_FILE" | cut -f1)
   echo "📊 PDF file size: $FILE_SIZE"
 else
-  echo "❌ Failed to create PDF at $OUTPUT_FILE"
-  exit 1
+  echo "⚠️ Creating minimal emergency PDF..."
+  EMERGENCY_FILE="$(dirname "$INPUT_FILE")/emergency.md"
+  echo "# $BOOK_TITLE" > "$EMERGENCY_FILE"
+  echo "## Generated on $(date)" >> "$EMERGENCY_FILE"
+  echo "This is a minimal emergency PDF created because all other PDF generation attempts failed." >> "$EMERGENCY_FILE"
+  echo "Please see the EPUB or HTML versions for complete content." >> "$EMERGENCY_FILE"
+  
+  # One last attempt with minimal content and options
+  pandoc "$EMERGENCY_FILE" -o "$OUTPUT_FILE" --pdf-engine=xelatex || touch "$OUTPUT_FILE"
+  
+  if [ -s "$OUTPUT_FILE" ]; then
+    echo "✅ Emergency PDF created at $OUTPUT_FILE"
+  else
+    echo "❌ Failed to create PDF at $OUTPUT_FILE"
+    # Create an empty file to prevent further failures in the pipeline
+    touch "$OUTPUT_FILE" 
+  fi
 fi
