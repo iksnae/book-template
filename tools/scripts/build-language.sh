@@ -74,6 +74,14 @@ else
   fi
 fi
 
+# Debug output of paths
+echo "Output filenames:"
+echo "  - Markdown: $MARKDOWN_FILENAME"
+echo "  - PDF: $PDF_FILENAME"
+echo "  - EPUB: $EPUB_FILENAME"
+echo "  - MOBI: $MOBI_FILENAME"
+echo "  - HTML: $HTML_FILENAME"
+
 # Define output paths
 MARKDOWN_PATH="build/$MARKDOWN_FILENAME"
 PDF_PATH="build/$PDF_FILENAME"
@@ -161,6 +169,6 @@ fi
 
 # List final build directory contents for this language
 echo "📂 Contents of build directory for $LANGUAGE:"
-ls -la "$MARKDOWN_PATH" "$PDF_PATH" "$EPUB_PATH" "$MOBI_PATH" "$HTML_PATH" 2>/dev/null || echo "Some files may be missing"
+ls -la "build/" | grep -E "$MARKDOWN_FILENAME|$PDF_FILENAME|$EPUB_FILENAME|$MOBI_FILENAME|$HTML_FILENAME" 2>/dev/null || echo "No output files found!"
 
 echo "✅ Successfully built $LANGUAGE version of the book"
