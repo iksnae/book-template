@@ -174,3 +174,4 @@ This starter kit is open source and available under the MIT License.
 ## Credits
 
 Developed in partnership with [Khaos Studio](http://khaos.studio).
+
