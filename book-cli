@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+// This is a placeholder file to replace the symlink
+// The actual functionality is now provided by the book-tools package
+console.log("This CLI has been migrated to the book-tools package.");
+console.log("Please run 'npx book-tools' or install globally with 'npm install -g book-tools'.");
