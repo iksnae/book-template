@@ -8,7 +8,7 @@ on:
       - 'art/**'
       - 'templates/**'
       - 'build.sh'
-      - 'package.json'
+      - 'tools/**'
       - '.github/workflows/build-book.yml'
       - 'book.yaml'  # Configuration file
   workflow_dispatch:  # Allow manual triggering
@@ -21,6 +21,8 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    container:
+      image: iksnae/book-builder:latest
     outputs:
       version: ${{ steps.version.outputs.version }}
       date: ${{ steps.version.outputs.date }}
@@ -29,42 +31,7 @@ jobs:
       book_author: ${{ steps.config.outputs.book_author }}
       file_prefix: ${{ steps.config.outputs.file_prefix }}
     steps:
-      # Directly download the files we need without git
-      - name: Create workspace and download files
-        run: |
-          # Create necessary directories
-          mkdir -p .github/workflows
-          mkdir -p book
-          mkdir -p templates
-          mkdir -p art
-          
-          # Download key files directly
-          curl -s -o book.yaml https://raw.githubusercontent.com/${{ github.repository }}/main/book.yaml
-          curl -s -o build.sh https://raw.githubusercontent.com/${{ github.repository }}/main/build.sh
-          curl -s -o package.json https://raw.githubusercontent.com/${{ github.repository }}/main/package.json || echo '{"name":"book-template"}' > package.json
-          curl -s -o README.md https://raw.githubusercontent.com/${{ github.repository }}/main/README.md || echo '# Book Template' > README.md
-          curl -s -o .github/workflows/build-book.yml https://raw.githubusercontent.com/${{ github.repository }}/main/.github/workflows/build-book.yml
-          
-          # Make build script executable
-          chmod +x build.sh
-          
-          # Create a dummy book-cli file
-          echo '#!/usr/bin/env node' > book-cli
-          echo '// Placeholder file to replace symlink' >> book-cli
-          chmod +x book-cli
-          
-          # Create package-lock.json if it doesn't exist
-          echo '{"name":"book-template","version":"1.0.0","lockfileVersion":3,"requires":true,"packages":{}}' > package-lock.json
-          
-          # List downloaded files
-          echo "=== Downloaded Files ==="
-          ls -la
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: 'npm'
+      - uses: actions/checkout@v4
 
       # Load configuration from book.yaml if it exists
       - name: Load configuration
@@ -122,16 +89,15 @@ jobs:
       - name: Check for cover image
         id: cover
         run: |
-          # Check for potential cover image locations
-          if [ -d "art" ] && [ -f "art/cover.png" ]; then
+          if [ -f "art/cover.png" ]; then
             echo "COVER_IMAGE=art/cover.png" >> $GITHUB_ENV
             echo "✅ Found cover image at art/cover.png"
             echo "cover_found=true" >> $GITHUB_OUTPUT
-          elif [ -d "book/images" ] && [ -f "book/images/cover.png" ]; then
+          elif [ -f "book/images/cover.png" ]; then
             echo "COVER_IMAGE=book/images/cover.png" >> $GITHUB_ENV
             echo "✅ Found cover image at book/images/cover.png"
             echo "cover_found=true" >> $GITHUB_OUTPUT
-          elif [ -d "book/en/images" ] && [ -f "book/en/images/cover.png" ]; then
+          elif [ -f "book/en/images/cover.png" ]; then
             echo "COVER_IMAGE=book/en/images/cover.png" >> $GITHUB_ENV
             echo "✅ Found cover image at book/en/images/cover.png"
             echo "cover_found=true" >> $GITHUB_OUTPUT
@@ -144,71 +110,16 @@ jobs:
   build:
     needs: setup
     runs-on: ubuntu-latest
+    container:
+      image: iksnae/book-builder:latest
     steps:
-      # Directly download the files we need without git
-      - name: Create workspace and download files
-        run: |
-          # Create necessary directories
-          mkdir -p book
-          mkdir -p templates
-          mkdir -p art
-          mkdir -p build
-          mkdir -p build/images
-          
-          # Download key files directly
-          curl -s -o book.yaml https://raw.githubusercontent.com/${{ github.repository }}/main/book.yaml
-          curl -s -o build.sh https://raw.githubusercontent.com/${{ github.repository }}/main/build.sh
-          curl -s -o package.json https://raw.githubusercontent.com/${{ github.repository }}/main/package.json || echo '{"name":"book-template"}' > package.json
-          
-          # Create package-lock.json if it doesn't exist
-          echo '{"name":"book-template","version":"1.0.0","lockfileVersion":3,"requires":true,"packages":{}}' > package-lock.json
-          
-          # Make build script executable
-          chmod +x build.sh
-          
-          # Create a dummy book-cli file
-          echo '#!/usr/bin/env node' > book-cli
-          echo '// Placeholder file to replace symlink' >> book-cli
-          chmod +x book-cli
-          
-          # List downloaded files
-          echo "=== Downloaded Files ==="
-          ls -la
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          # Disable cache to avoid errors with the dynamically generated package-lock.json
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: |
-          # Create minimal package.json if needed
-          if ! grep -q "dependencies" package.json; then
-            echo "Creating minimal package.json with book-tools dependency"
-            cat > package.json << EOF
-{
-  "name": "book-template",
-  "version": "1.0.0",
-  "description": "A template for creating books in multiple formats from markdown sources",
-  "main": "index.js",
-  "scripts": {
-    "build": "book build",
-    "build:interactive": "book interactive"
-  },
-  "dependencies": {
-    "book-tools": "github:iksnae/book-tools"
-  }
-}
-EOF
-          fi
-          
-          # Install dependencies
-          npm install --no-fund --no-audit
+      - uses: actions/checkout@v4
       
       - name: Prepare environment
         run: |
+          mkdir -p build
+          mkdir -p build/images
+          
           # Create language directories based on what exists in the book/ folder
           for lang in $(ls -1 book/ 2>/dev/null || echo "en"); do
             if [ -d "book/$lang" ] && [ "$lang" != "images" ]; then
@@ -218,24 +129,13 @@ EOF
             fi
           done
           
-          # Create en directory by default if it doesn't exist
-          mkdir -p "build/en"
-          mkdir -p "build/en/images"
-          
-          # Install necessary tools
-          npm install -g calibre-cli || echo "Calibre installation skipped"
+          # Fix permissions on script files
+          chmod +x build.sh
+          find tools/scripts -name "*.sh" -exec chmod +x {} \;
 
       - name: Run build script
         run: |
           echo "Running build script..."
-          # Create minimal test content if book directory is empty
-          if [ ! -d "book/en" ]; then
-            mkdir -p book/en/chapter-01
-            echo "# Test Chapter" > book/en/chapter-01/00-introduction.md
-            echo "This is a test chapter for the build process." >> book/en/chapter-01/00-introduction.md
-          fi
-          
-          # Run the build script
           ./build.sh --all-languages || echo "Build script completed with warnings"
 
       - name: List build directory contents
@@ -254,16 +154,6 @@ EOF
           # Show file sizes for main book formats
           echo "=== Book File Sizes ==="
           find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | xargs du -h 2>/dev/null || echo "Some files may be missing"
-
-      - name: Create test files if build failed
-        run: |
-          # Check if any files were generated
-          if [ $(find build/ -type f -name "*.pdf" -o -name "*.epub" -o -name "*.html" | wc -l) -eq 0 ]; then
-            echo "No output files found, creating test files for debugging"
-            echo "<html><body><h1>Test Book</h1><p>This is a test file.</p></body></html>" > build/write-and-publish.html
-            touch build/write-and-publish.pdf
-            touch build/write-and-publish.epub
-          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -284,6 +174,8 @@ EOF
     needs: [setup, build]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -336,6 +228,8 @@ EOF
     needs: [build, release]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
