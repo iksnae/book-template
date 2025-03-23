@@ -1,7 +1,0 @@
-#!/usr/bin/env node
-// This is a temporary file to replace the symlink
-// This file will be removed in a separate commit
-
-console.log('This CLI has been replaced by the book-tools package.');
-console.log('Please run: npm install && npx book');
-process.exit(0);
