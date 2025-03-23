@@ -70,32 +70,27 @@ You have several options to build your book locally:
 
 ### Using the CLI Tool
 
-The project includes a convenient CLI tool for managing your book builds:
+After installing the dependencies with `npm install`, you can use the book-tools CLI:
 
 ```bash
-# Navigate to the CLI directory
-cd tools/cli
-
-# Install dependencies
-npm install
-
 # Run in interactive mode
-node index.js interactive
+npx book interactive
+
+# Build the book with default options
+npx book build
 
 # Create a new chapter
-node index.js create-chapter
+npx book create-chapter
 
 # Check chapter structure
-node index.js check-chapter -n 01
+npx book check-chapter -n 01
 
 # Get book information
-node index.js info
+npx book info
 
 # Clean build artifacts
-node index.js clean
+npx book clean
 ```
-
-For more details, see the [CLI Tool Documentation](./tools/cli/README.md).
 
 ### Using Docker
 
@@ -107,9 +102,6 @@ docker pull iksnae/book-builder:latest
 
 # Run a build in the current directory
 docker run --rm -v $(pwd):/workspace iksnae/book-builder:latest /workspace/build.sh
-
-# Or use the CLI tool through Docker
-docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest bash -c "cd /workspace && cd tools/cli && npm i && node index.js interactive"
 ```
 
 ### Direct Build Script
