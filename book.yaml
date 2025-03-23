@@ -2,7 +2,7 @@
 title: "Write & Publish"
 subtitle: "A guide to publishing your book with GitHub"
 author: "Your Name"
-version: "1.0.1"  # Updated version to trigger workflow
+version: "1.0.2"  # Updated version to trigger workflow test
 file_prefix: "write-and-publish"
 languages:
   - en
