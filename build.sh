@@ -1,15 +1,14 @@
 #!/bin/bash
 
 # Main build script for book-template
-# This is a convenience wrapper around tools/scripts/build.sh
+# Uses the book-tools package for building books
 
 # Make the script exit on error
 set -e
 
-# Make sure the tools/scripts directory exists
-if [ ! -d "tools/scripts" ]; then
-  echo "❌ Error: tools/scripts directory not found!"
-  echo "Make sure you're running this script from the root of the book-template repository."
+# Check if book-tools is installed locally
+if ! command -v npx &> /dev/null; then
+  echo "❌ Error: npx not found, please install Node.js and npm"
   exit 1
 fi
 
@@ -23,8 +22,16 @@ mkdir -p templates/{pdf,epub,html}/
 mkdir -p build/images
 mkdir -p book/images
 
-# Make the build script executable
-chmod +x tools/scripts/build.sh
+echo "📚 Building book using book-tools package..."
 
-# Forward all arguments to the main build script
-tools/scripts/build.sh "$@"
+# Process command line arguments
+ARGS=""
+for arg in "$@"
+do
+  ARGS="$ARGS $arg"
+done
+
+# Use npx to run book-tools
+npx book build $ARGS
+
+echo "✅ Build completed successfully!"
