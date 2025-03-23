@@ -187,7 +187,7 @@ jobs:
           # Create minimal package.json if needed
           if ! grep -q "dependencies" package.json; then
             echo "Creating minimal package.json with book-tools dependency"
-            cat > package.json << 'EOF'
+            cat > package.json << EOF
 {
   "name": "book-template",
   "version": "1.0.0",
