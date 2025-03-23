@@ -29,11 +29,31 @@ jobs:
       book_author: ${{ steps.config.outputs.book_author }}
       file_prefix: ${{ steps.config.outputs.file_prefix }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          # Use fewer features to avoid symlink issues
-          lfs: false
-          submodules: false
+      # Simplified checkout that avoids symlink issues
+      - name: Manual Repository Checkout
+        run: |
+          git clone --depth=1 --no-checkout https://github.com/${{ github.repository }}.git .
+          git config --global --add safe.directory $(pwd)
+          
+          # Create and checkout an orphan worktree
+          git checkout --orphan temp_branch
+          
+          # Fetch only specific files/directories we need
+          git checkout main -- .gitattributes || true
+          git checkout main -- .github || true
+          git checkout main -- package.json || true
+          git checkout main -- package-lock.json || true
+          git checkout main -- book.yaml || true
+          git checkout main -- build.sh || true
+          git checkout main -- book || true
+          git checkout main -- art || true
+          git checkout main -- templates || true
+          git checkout main -- README.md || true
+          
+          # Skip attempting to check out the book-cli symlink
+          echo "#!/usr/bin/env node" > book-cli
+          echo "// Placeholder file to replace symlink" >> book-cli
+          chmod +x book-cli
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -119,11 +139,30 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          # Use fewer features to avoid symlink issues
-          lfs: false
-          submodules: false
+      # Simplified checkout that avoids symlink issues
+      - name: Manual Repository Checkout
+        run: |
+          git clone --depth=1 --no-checkout https://github.com/${{ github.repository }}.git .
+          git config --global --add safe.directory $(pwd)
+          
+          # Create and checkout an orphan worktree
+          git checkout --orphan temp_branch
+          
+          # Fetch only specific files/directories we need
+          git checkout main -- .gitattributes || true
+          git checkout main -- package.json || true
+          git checkout main -- package-lock.json || true
+          git checkout main -- book.yaml || true
+          git checkout main -- build.sh || true
+          git checkout main -- book || true
+          git checkout main -- art || true
+          git checkout main -- templates || true
+          git checkout main -- README.md || true
+          
+          # Skip attempting to check out the book-cli symlink
+          echo "#!/usr/bin/env node" > book-cli
+          echo "// Placeholder file to replace symlink" >> book-cli
+          chmod +x book-cli
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -195,11 +234,17 @@ jobs:
     needs: [setup, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          # Use fewer features to avoid symlink issues
-          lfs: false
-          submodules: false
+      # Simplified checkout that avoids symlink issues
+      - name: Manual Repository Checkout
+        run: |
+          git clone --depth=1 --no-checkout https://github.com/${{ github.repository }}.git .
+          git config --global --add safe.directory $(pwd)
+          
+          # Create and checkout an orphan worktree
+          git checkout --orphan temp_branch
+          
+          # We only need minimal files for release
+          git checkout main -- README.md || true
       
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -253,11 +298,14 @@ jobs:
     needs: [build, release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          # Use fewer features to avoid symlink issues
-          lfs: false
-          submodules: false
+      # Simplified checkout that avoids symlink issues
+      - name: Manual Repository Checkout
+        run: |
+          git clone --depth=1 --no-checkout https://github.com/${{ github.repository }}.git .
+          git config --global --add safe.directory $(pwd)
+          
+          # Create and checkout an orphan worktree
+          git checkout --orphan temp_branch
       
       - name: Download artifacts
         uses: actions/download-artifact@v4
