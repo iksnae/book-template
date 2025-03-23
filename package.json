@@ -1,0 +1,33 @@
+{
+  "name": "book-template",
+  "version": "1.0.0",
+  "description": "A template for creating books in multiple formats from markdown sources",
+  "main": "index.js",
+  "scripts": {
+    "build": "book build",
+    "build:interactive": "book interactive",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iksnae/book-template.git"
+  },
+  "keywords": [
+    "book",
+    "ebook",
+    "markdown",
+    "pdf",
+    "epub",
+    "mobi",
+    "html"
+  ],
+  "author": "iksnae",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iksnae/book-template/issues"
+  },
+  "homepage": "https://github.com/iksnae/book-template#readme",
+  "dependencies": {
+    "book-tools": "github:iksnae/book-tools"
+  }
+}
