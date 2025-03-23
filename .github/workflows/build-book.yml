@@ -30,6 +30,10 @@ jobs:
       file_prefix: ${{ steps.config.outputs.file_prefix }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Use fewer features to avoid symlink issues
+          lfs: false
+          submodules: false
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -116,6 +120,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Use fewer features to avoid symlink issues
+          lfs: false
+          submodules: false
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -188,6 +196,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Use fewer features to avoid symlink issues
+          lfs: false
+          submodules: false
       
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -242,6 +254,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Use fewer features to avoid symlink issues
+          lfs: false
+          submodules: false
       
       - name: Download artifacts
         uses: actions/download-artifact@v4
