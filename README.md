@@ -8,7 +8,7 @@ Create and publish your own professional-looking books with this easy-to-use sta
 
 We believe book creation should be simple: **Write your content, Push to GitHub, and Forget about the technical details**. The system automatically handles everything else, delivering beautifully formatted books ready for distribution.
 
-## 📚 Sample Books
+## 📚 Template Guide Book
 
 <div align="center">
 

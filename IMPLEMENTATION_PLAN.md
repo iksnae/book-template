@@ -33,8 +33,8 @@ This plan outlines the steps to extract the build implementation from the `iksna
    - Include sample images and cover
 
 3. **Document Docker configuration**:
-   - Include Dockerfile for `book-builder` image
-   - Document how to use the Docker image
+   - Document how to use the external `iksnae/book-builder` Docker image
+   - Reference to the separate repository where the Docker image is maintained
    - Provide instructions for running builds locally
 
 ## Phase 3: Template Customization & Enhancement
