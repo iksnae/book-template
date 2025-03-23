@@ -38,21 +38,19 @@ You have several options to build and test your book locally:
 
 ### Option 1: Using the CLI Tool (Recommended)
 
-The project includes a convenient CLI tool:
+The project includes the book-tools package with a powerful CLI tool:
 
 ```bash
-# From your project root
-cd tools/cli
+# Install dependencies first (only needed once)
 npm install
-node index.js interactive
-```
 
-Or use the shortcut from the project root:
+# Run in interactive mode
+npx book interactive
 
-```bash
-# Make sure dependencies are installed first
-cd tools/cli && npm install && cd ../..
-./book-cli interactive
+# Or use other commands
+npx book build
+npx book create-chapter
+npx book info
 ```
 
 ### Option 2: Using Docker
