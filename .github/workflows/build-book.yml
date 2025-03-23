@@ -187,21 +187,21 @@ jobs:
           # Create minimal package.json if needed
           if ! grep -q "dependencies" package.json; then
             echo "Creating minimal package.json with book-tools dependency"
-            cat > package.json << EOF
-            {
-              "name": "book-template",
-              "version": "1.0.0",
-              "description": "A template for creating books in multiple formats from markdown sources",
-              "main": "index.js",
-              "scripts": {
-                "build": "book build",
-                "build:interactive": "book interactive"
-              },
-              "dependencies": {
-                "book-tools": "github:iksnae/book-tools"
-              }
-            }
-            EOF
+            cat > package.json << 'EOF'
+{
+  "name": "book-template",
+  "version": "1.0.0",
+  "description": "A template for creating books in multiple formats from markdown sources",
+  "main": "index.js",
+  "scripts": {
+    "build": "book build",
+    "build:interactive": "book interactive"
+  },
+  "dependencies": {
+    "book-tools": "github:iksnae/book-tools"
+  }
+}
+EOF
           fi
           
           # Install dependencies
@@ -284,7 +284,6 @@ jobs:
     needs: [setup, build]
     runs-on: ubuntu-latest
     steps:
-      # Download artifacts from build job
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -337,7 +336,6 @@ jobs:
     needs: [build, release]
     runs-on: ubuntu-latest
     steps:
-      # Download artifacts from build job
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
