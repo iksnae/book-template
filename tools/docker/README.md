@@ -15,7 +15,24 @@ docker run --rm -v $(pwd):/workspace iksnae/book-builder:latest /workspace/build
 
 # Run an interactive shell in the container
 docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest /bin/bash
+
+# Use the CLI tool directly in the container
+docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest bash -c "cd /workspace && cd tools/cli && npm i && node index.js interactive"
 ```
+
+### Using the CLI Tool
+
+The project includes a Node.js-based CLI tool that provides a more user-friendly interface to the book building scripts. To use it with Docker:
+
+```bash
+# Run the CLI in interactive mode
+docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest bash -c "cd /workspace && cd tools/cli && npm i && node index.js interactive"
+
+# Run specific CLI commands
+docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest bash -c "cd /workspace && cd tools/cli && npm i && node index.js build --all-languages"
+```
+
+For more information about the CLI tool, see the [CLI README](../cli/README.md).
 
 ### GitHub Actions Usage
 

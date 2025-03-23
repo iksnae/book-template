@@ -1,0 +1,19 @@
+{
+  "name": "book-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for the book template system",
+  "main": "index.js",
+  "bin": {
+    "book": "./index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "commander": "^10.0.0",
+    "inquirer": "^8.2.5",
+    "chalk": "^4.1.2",
+    "ora": "^5.4.1",
+    "yaml": "^2.2.1"
+  }
+} 

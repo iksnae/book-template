@@ -26,6 +26,7 @@ We believe book creation should be simple: **Write your content, Push to GitHub,
 - **No Technical Knowledge Required**: Everything is set up and ready to use
 - **Support for Multiple Languages**: Create books in any language
 - **Free and Open Source**: No expensive publishing tools needed
+- **Convenient CLI Tool**: Manage your book builds with an easy-to-use command-line interface
 
 ## Getting Started in 3 Easy Steps
 
@@ -45,6 +46,7 @@ This starter kit gives you everything you need to create a professional book:
 - Cover page setup
 - Publishing to multiple formats with a single command
 - Cloud-based build system - no installations required
+- Interactive CLI tool for managing builds locally
 
 ## How It Works
 
@@ -61,6 +63,62 @@ Your book content goes in the `book/en/` folder (or other language folders):
 - Add your chapter introduction in the `00-introduction.md` file
 - Add sections to your chapter in numbered files (`01-section.md`, `02-section.md`, etc.)
 - Place images in the `images/` folder within each chapter
+
+## Building Your Book Locally
+
+You have several options to build your book locally:
+
+### Using the CLI Tool
+
+The project includes a convenient CLI tool for managing your book builds:
+
+```bash
+# Navigate to the CLI directory
+cd tools/cli
+
+# Install dependencies
+npm install
+
+# Run in interactive mode
+node index.js interactive
+
+# Create a new chapter
+node index.js create-chapter
+
+# Check chapter structure
+node index.js check-chapter -n 01
+
+# Get book information
+node index.js info
+
+# Clean build artifacts
+node index.js clean
+```
+
+For more details, see the [CLI Tool Documentation](./tools/cli/README.md).
+
+### Using Docker
+
+You can also build your book using Docker:
+
+```bash
+# Pull the image
+docker pull iksnae/book-builder:latest
+
+# Run a build in the current directory
+docker run --rm -v $(pwd):/workspace iksnae/book-builder:latest /workspace/build.sh
+
+# Or use the CLI tool through Docker
+docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest bash -c "cd /workspace && cd tools/cli && npm i && node index.js interactive"
+```
+
+### Direct Build Script
+
+You can also use the build script directly:
+
+```bash
+./build.sh
+```
 
 ## Automatic Publishing
 

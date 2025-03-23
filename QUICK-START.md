@@ -32,6 +32,44 @@ After creating your repository from this template:
 3. **Add your book cover**:
    - Replace `art/cover.png` with your book cover (keep the same filename)
 
+## Building Your Book Locally
+
+You have several options to build and test your book locally:
+
+### Option 1: Using the CLI Tool (Recommended)
+
+The project includes a convenient CLI tool:
+
+```bash
+# From your project root
+cd tools/cli
+npm install
+node index.js interactive
+```
+
+Or use the shortcut from the project root:
+
+```bash
+# Make sure dependencies are installed first
+cd tools/cli && npm install && cd ../..
+./book-cli interactive
+```
+
+### Option 2: Using Docker
+
+If you have Docker installed:
+
+```bash
+docker pull iksnae/book-builder:latest
+docker run --rm -v $(pwd):/workspace iksnae/book-builder:latest /workspace/build.sh
+```
+
+### Option 3: Direct Build Script
+
+```bash
+./build.sh
+```
+
 ## Publishing Your Book
 
 The process is fully automated:
