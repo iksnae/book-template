@@ -8,7 +8,7 @@ on:
       - 'art/**'
       - 'templates/**'
       - 'build.sh'
-      - 'tools/**'
+      - 'package.json'
       - '.github/workflows/build-book.yml'
       - 'book.yaml'  # Configuration file
   workflow_dispatch:  # Allow manual triggering
@@ -21,8 +21,6 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    container:
-      image: iksnae/book-builder:latest
     outputs:
       version: ${{ steps.version.outputs.version }}
       date: ${{ steps.version.outputs.date }}
@@ -32,6 +30,12 @@ jobs:
       file_prefix: ${{ steps.config.outputs.file_prefix }}
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
 
       # Load configuration from book.yaml if it exists
       - name: Load configuration
@@ -110,10 +114,17 @@ jobs:
   build:
     needs: setup
     runs-on: ubuntu-latest
-    container:
-      image: iksnae/book-builder:latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
       
       - name: Prepare environment
         run: |
@@ -131,7 +142,9 @@ jobs:
           
           # Fix permissions on script files
           chmod +x build.sh
-          find tools/scripts -name "*.sh" -exec chmod +x {} \;
+          
+          # Install necessary tools
+          npm install -g calibre-cli
 
       - name: Run build script
         run: |
