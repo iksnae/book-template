@@ -1,0 +1,27 @@
+# Git files
+.git
+.github
+.gitignore
+
+# Build output
+build/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Art files (except cover needed for build)
+art/*.jpg
+art/*.png
+!art/cover.png
+
+# Sample content
+book/
+
+# Docker-related
+tools/docker/
+
+# Temporary files
+.DS_Store
+.goose/
