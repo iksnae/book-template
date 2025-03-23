@@ -1,0 +1,5 @@
+# Handle line endings automatically for files detected as text
+* text=auto
+
+# Treat symlinks as binary files
+book-cli binary
