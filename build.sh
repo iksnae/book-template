@@ -13,6 +13,7 @@ SKIP_PDF=false
 SKIP_EPUB=false
 SKIP_MOBI=false
 SKIP_HTML=false
+SKIP_DOCX=false
 
 for arg in "$@"
 do
@@ -35,13 +36,16 @@ do
     --skip-html)
       SKIP_HTML=true
       ;;
+    --skip-docx)
+      SKIP_DOCX=true
+      ;;
   esac
 done
 
 # Create necessary directories
 mkdir -p build
 mkdir -p book/images
-mkdir -p templates/{pdf,epub,html}/
+mkdir -p templates/{pdf,epub,html,docx}/
 
 # Check if we're in a Docker container or if using Docker build
 if [ -f "/.dockerenv" ] || [ "$1" = "--docker" ]; then
@@ -76,6 +80,10 @@ if [ -f "/.dockerenv" ] || [ "$1" = "--docker" ]; then
       CMD="$CMD --skip-html"
     fi
     
+    if [ "$SKIP_DOCX" = true ]; then
+      CMD="$CMD --skip-docx"
+    fi
+    
     echo "📚 Running book-tools: $CMD"
     eval $CMD
   else
@@ -107,6 +115,10 @@ if [ -f "/.dockerenv" ] || [ "$1" = "--docker" ]; then
     
     if [ "$SKIP_HTML" = true ]; then
       CMD="$CMD --skip-html"
+    fi
+    
+    if [ "$SKIP_DOCX" = true ]; then
+      CMD="$CMD --skip-docx"
     fi
     
     echo "📚 Running build command: $CMD"
@@ -164,6 +176,10 @@ else
         CMD="$CMD --skip-html"
       fi
       
+      if [ "$SKIP_DOCX" = true ]; then
+        CMD="$CMD --skip-docx"
+      fi
+      
       CMD="$CMD\""
       echo "📚 Running: $CMD"
       eval $CMD
@@ -198,6 +214,10 @@ else
   
   if [ "$SKIP_HTML" = true ]; then
     CMD="$CMD --skip-html"
+  fi
+  
+  if [ "$SKIP_DOCX" = true ]; then
+    CMD="$CMD --skip-docx"
   fi
   
   # Add recovery flag
