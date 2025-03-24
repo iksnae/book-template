@@ -6,6 +6,21 @@
 - **Status**: Phase 1 of migration plan (Feature Analysis and Upstream Development)
 - **Last PR Merged**: PR #20 - Migration Analysis and Plan for book-tools Integration
 - **Primary Documents**: `docs/FEATURE_AUDIT.md`, `docs/MIGRATION_PLAN.md`, `docs/TECHNICAL_DESIGN.md`
+- **GitHub Project RFP**: Issue #18 - Migration from Bespoke Build System to book-tools Based Solution
+
+## Agent Work Principles
+
+### Focus Areas
+1. **Prioritize Upstream Development**: Work on enhancing `book-tools` with missing features before making changes to `book-template`.
+2. **Follow Established Plan**: Adhere to the phases outlined in `docs/MIGRATION_PLAN.md`.
+3. **Cross-Repository Approach**: Implement features in `book-tools` that are needed for `book-template` migration.
+4. **Incremental Progress**: Complete one step at a time, focusing on feature development rather than multiple PR exploration.
+
+### Resource Optimization
+1. **Avoid Redundant Repository Exploration**: Use this FAQ as primary reference instead of searching for additional issues and PRs.
+2. **Reference Documentation**: Prioritize using the technical documents under `docs/` folder for implementation details.
+3. **Focus on Task Completion**: Tackle one missing feature at a time until it's completely implemented.
+4. **Stepwise Implementation**: Follow the phase approach rather than trying to implement the entire migration at once.
 
 ## Repository Structure
 
@@ -27,55 +42,45 @@
    - Migration plan created
    - Technical design documented
 
-2. 🔄 **Next Phase**: Implement missing features in book-tools
-   - Create issue templates for feature implementation
-   - Create issues in book-tools repository
-   - Begin implementing high-priority features
+2. 🔄 **Next Immediate Tasks**:
+   - Create issue templates for feature implementation in `book-tools`
+   - Begin implementing "Extended Configuration Support" feature in `book-tools`
+   - Establish test criteria for features
 
-## Feature Gaps to Address
+## Feature Gaps to Address (In Priority Order)
 
-### High Priority
-1. **Extended Configuration Support**
+### 1. Extended Configuration Support
    - PDF settings (paper size, margins, font)
    - EPUB settings (cover, CSS, TOC)
    - HTML settings (template, CSS, TOC)
+   - Implementation details in `docs/TECHNICAL_DESIGN.md` section 1
 
-2. **Error Handling Improvements**
+### 2. Error Handling Improvements
    - Missing image resilience
    - Build process recovery
    - Verbose logging
+   - Implementation details in `docs/TECHNICAL_DESIGN.md` section 2
 
-3. **GitHub Actions Integration**
+### 3. GitHub Actions Integration
    - Workflow templates
    - CI/CD support
-
-### Medium Priority
-1. **Directory Structure Compatibility**
-2. **Configuration Format Alignment**
+   - Implementation details in `docs/TECHNICAL_DESIGN.md` section 3
 
 ## Implementation Approach
 
-1. **Enhance book-tools first**:
-   - Add extended configuration support
-   - Improve error handling
-   - Add GitHub Actions integration
+### Current Phase Focus (Phase 1: Feature Analysis and Upstream Development)
+1. **Create issue templates for tracking feature implementation**
+2. **Implement missing features in book-tools**:
+   - Start with Extended Configuration Support
+   - Then implement Error Handling Improvements
+   - Finally add GitHub Actions Integration
 
-2. **Then adapt book-template**:
-   - Add book-tools dependency in package.json
-   - Update build.sh as wrapper
-   - Create config adapter
-   - Update GitHub Actions workflow
-
-## CLI Command Mapping
-
-| book-template (current) | book-tools (target) |
-|-------------------------|---------------------|
-| `./build.sh` | `book build` |
-| N/A | `book interactive` |
-| N/A | `book create-chapter` |
-| N/A | `book check-chapter` |
-| N/A | `book info` |
-| N/A | `book clean` |
+### What Not To Do
+1. **Don't skip to later phases** before completing current phase tasks
+2. **Don't make changes to book-template** until all required features are implemented in book-tools
+3. **Don't spend time exploring unrelated issues** or repository areas
+4. **Don't use puppeteer for accessing GitHub repos** as specified in the instruction
+5. **Don't attempt to create images or artwork** - create descriptive text files in the resource directory instead
 
 ## Configuration Format Differences
 
@@ -115,18 +120,22 @@ languages: ["en"]
 # Format configuration not yet available
 ```
 
-## Key Implementation Files to Create
+## Development Workflow
 
-1. **Configuration Adapter**
-   - Converts between book-template and book-tools formats
-   - Located in: `tools/config-adapter.js`
+1. **For each feature to implement**:
+   - Reference the technical design in `docs/TECHNICAL_DESIGN.md`
+   - Create a complete implementation with tests
+   - Update documentation
 
-2. **Build Script Wrapper**
-   - Updates `build.sh` to call book-tools CLI
-   - Ensures backward compatibility
+2. **PR Creation Process**:
+   - Create targeted PRs addressing one feature at a time
+   - Include comprehensive tests and documentation
+   - Reference the relevant section from the migration plan
 
-3. **Extended Configuration in book-tools**
-   - Adds format-specific settings to `src/utils.js`
+3. **Testing Approach**:
+   - Write unit tests for each new feature
+   - Test against the requirements specified in feature audit
+   - Verify compatibility with book-template's needs
 
 ## Quick Reference FAQ
 
@@ -156,3 +165,15 @@ languages: ["en"]
 
 9. **Q: What technical details should I focus on?**
    - A: Configuration adapter, wrapper scripts, error handling mechanisms
+
+10. **Q: Where should I implement features first?**
+    - A: Always implement in book-tools first, then adapt book-template once features are available
+
+11. **Q: How do I avoid wasting resources?**
+    - A: Focus on one feature at a time, refer to documentation instead of searching repositories, follow the established plan
+
+12. **Q: What should I do if I encounter an undocumented requirement?**
+    - A: Note it in the FAQ, implement according to technical design principles, and follow up with updates
+
+13. **Q: How to prioritize work when multiple tasks are pending?**
+    - A: Follow the priority order in the Feature Gaps section of this document
