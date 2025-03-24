@@ -76,6 +76,9 @@ jobs:
     - name: Set up Docker
       uses: docker/setup-buildx-action@v3
       
+    - name: Pull book-builder Docker image
+      run: docker pull iksnae/book-builder:latest
+      
     - name: Build book (all languages)
       if: github.event.inputs.languages == ''
       run: |
@@ -88,7 +91,8 @@ jobs:
           done
         fi
         
-        docker run --rm -v "$(pwd):/book" iksnae/book-builder bash -c "cd /book && ./build.sh --docker --all-languages $SKIP_FLAGS"
+        # Use the book-tools CLI inside the Docker container
+        docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --docker --all-languages $SKIP_FLAGS"
     
     - name: Build book (specific languages)
       if: github.event.inputs.languages != ''
@@ -105,7 +109,7 @@ jobs:
         IFS=',' read -ra LANGS <<< "${{ github.event.inputs.languages }}"
         for lang in "${LANGS[@]}"; do
           echo "Building for language: $lang"
-          docker run --rm -v "$(pwd):/book" iksnae/book-builder bash -c "cd /book && ./build.sh --docker --lang=$lang $SKIP_FLAGS"
+          docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --docker --lang=$lang $SKIP_FLAGS"
         done
     
     - name: List build artifacts
