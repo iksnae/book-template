@@ -1,91 +1,308 @@
-name: Release Book
+name: Create Book Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*' # Run when tag is pushed
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number (e.g., v1.0.0)'
+        description: 'Release version (e.g. v1.0.0)'
         required: true
-        default: ''
+        default: 'v0.1.0'
+
+# Permissions for creating releases and GitHub Pages
+permissions:
+  contents: write
+  deployments: write
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
-    
+    container:
+      image: iksnae/book-builder:latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      date: ${{ steps.version.outputs.date }}
+      book_title: ${{ steps.config.outputs.book_title }}
+      book_author: ${{ steps.config.outputs.book_author }}
+      file_prefix: ${{ steps.config.outputs.file_prefix }}
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Fetch all history for proper versioning
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-    
-    - name: Setup pandoc
-      uses: r-lib/actions/setup-pandoc@v2
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Build book with all languages
-      run: |
-        ./build.sh --all-languages
-    
-    - name: Determine version
-      id: get-version
-      run: |
-        if [[ "${{ github.event_name }}" == "push" ]]; then
-          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-        else
-          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-        fi
-    
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.get-version.outputs.version }}
-        release_name: Release ${{ steps.get-version.outputs.version }}
-        draft: false
-        prerelease: false
-        body: |
-          ## ${{ github.event.repository.name }} ${{ steps.get-version.outputs.version }}
+      - uses: actions/checkout@v4
+
+      # Load configuration from book.yaml
+      - name: Load configuration
+        id: config
+        run: |
+          if [ -f "book.yaml" ]; then
+            echo "Using configuration from book.yaml"
+            # Extract book title
+            BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+            echo "book_title=$BOOK_TITLE" >> $GITHUB_OUTPUT
+            echo "BOOK_TITLE=$BOOK_TITLE" >> $GITHUB_ENV
+            
+            # Extract book author
+            BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+            echo "book_author=$BOOK_AUTHOR" >> $GITHUB_OUTPUT
+            echo "BOOK_AUTHOR=$BOOK_AUTHOR" >> $GITHUB_ENV
+            
+            # Extract file prefix
+            FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+            if [ -n "$FILE_PREFIX" ]; then
+              echo "file_prefix=$FILE_PREFIX" >> $GITHUB_OUTPUT
+              echo "FILE_PREFIX=$FILE_PREFIX" >> $GITHUB_ENV
+            else
+              # Default to lowercase book title with hyphens
+              FILE_PREFIX=$(echo "$BOOK_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')
+              echo "file_prefix=$FILE_PREFIX" >> $GITHUB_OUTPUT
+              echo "FILE_PREFIX=$FILE_PREFIX" >> $GITHUB_ENV
+            fi
+          else
+            echo "No book.yaml found, using default values"
+            echo "book_title=My Book" >> $GITHUB_OUTPUT
+            echo "BOOK_TITLE=My Book" >> $GITHUB_ENV
+            echo "book_author=Author Name" >> $GITHUB_OUTPUT
+            echo "BOOK_AUTHOR=Author Name" >> $GITHUB_ENV
+            echo "file_prefix=my-book" >> $GITHUB_OUTPUT
+            echo "FILE_PREFIX=my-book" >> $GITHUB_ENV
+          fi
           
-          ### What's Changed
+          # Print the configuration values for debugging
+          echo "Book Title: $BOOK_TITLE"
+          echo "Book Author: $BOOK_AUTHOR"
+          echo "File Prefix: $FILE_PREFIX"
+
+      - name: Set version and date
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION=${{ github.event.inputs.version }}
+          else
+            VERSION=${GITHUB_REF#refs/tags/}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           
-          * Built with book-tools
-          * Includes PDF, EPUB, MOBI, and HTML formats
-          * Supports multiple languages
-    
-    - name: Upload PDF Assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/en/write-and-publish.pdf
-        asset_name: write-and-publish-${{ steps.get-version.outputs.version }}.pdf
-        asset_content_type: application/pdf
-    
-    - name: Upload EPUB Assets
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/en/write-and-publish.epub
-        asset_name: write-and-publish-${{ steps.get-version.outputs.version }}.epub
-        asset_content_type: application/epub+zip
-    
-    - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@4.1.4
-      with:
-        branch: gh-pages
-        folder: build
-        commit-message: "Deploy book to GitHub Pages for version ${{ steps.get-version.outputs.version }}"
+          DATE=$(date +'%B %d, %Y')
+          echo "DATE=$DATE" >> $GITHUB_ENV
+          echo "date=$DATE" >> $GITHUB_OUTPUT
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    container:
+      image: iksnae/book-builder:latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Prepare environment
+        run: |
+          mkdir -p build
+          
+          # Create language directories based on what exists in the book/ folder
+          for lang in $(ls -1 book/ 2>/dev/null || echo "en"); do
+            if [ -d "book/$lang" ] && [ "$lang" != "images" ]; then
+              echo "Creating build directory for language: $lang"
+              mkdir -p "build/$lang"
+            fi
+          done
+          
+          # Make sure the build script is executable
+          chmod +x build.sh
+
+      - name: Build book
+        run: |
+          echo "Building book..."
+          ./build.sh --docker --all-languages
+          
+      - name: List build artifacts
+        run: |
+          echo "=== Build Directory Contents ==="
+          ls -la build/
+          
+          # List language-specific directories
+          for lang in $(ls -1 build/ 2>/dev/null); do
+            if [ -d "build/$lang" ]; then
+              echo "=== $lang Directory Contents ==="
+              ls -la "build/$lang/" || echo "Directory may be empty"
+            fi
+          done
+          
+          # Show file sizes for main book formats
+          echo "=== Book File Sizes ==="
+          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | xargs du -h 2>/dev/null || echo "Some files may be missing"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-files
+          path: |
+            build/**/*.pdf
+            build/**/*.epub
+            build/**/*.mobi
+            build/**/*.html
+            build/**/*.md
+
+  release:
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: book-files
+          path: build
+
+      - name: Create release notes
+        run: |
+          echo "# ${{ needs.setup.outputs.book_title || 'Book' }} ${{ needs.setup.outputs.version }}" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "By ${{ needs.setup.outputs.book_author || 'Author' }}" >> RELEASE_NOTES.md
+          echo "Built on ${{ needs.setup.outputs.date }}" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## 📚 Download Options" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "| Format | Description | Link |" >> RELEASE_NOTES.md
+          echo "|--------|-------------|------|" >> RELEASE_NOTES.md
+          
+          # Create links for each format - we'll use the file prefix from config or default to 'book'
+          PREFIX="${{ needs.setup.outputs.file_prefix || 'book' }}"
+          
+          # Check if files exist and add them to release notes
+          if [ -f "build/en/$PREFIX.pdf" ] || [ -f "build/en/book.pdf" ]; then
+            echo "| 📄 PDF | For reading on computers and printing | [Download PDF](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/$PREFIX.pdf) |" >> RELEASE_NOTES.md
+          fi
+          
+          if [ -f "build/en/$PREFIX.epub" ] || [ -f "build/en/book.epub" ]; then
+            echo "| 📱 EPUB | For most e-readers and mobile devices | [Download EPUB](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/$PREFIX.epub) |" >> RELEASE_NOTES.md
+          fi
+          
+          if [ -f "build/en/$PREFIX.html" ] || [ -f "build/en/book.html" ]; then
+            echo "| 🌐 HTML | Read online in your browser | [View HTML](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/$PREFIX.html) |" >> RELEASE_NOTES.md
+          fi
+          
+          if [ -f "build/en/$PREFIX.mobi" ] || [ -f "build/en/book.mobi" ]; then
+            echo "| 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/$PREFIX.mobi) |" >> RELEASE_NOTES.md
+          fi
+          
+          echo "" >> RELEASE_NOTES.md
+          echo "## 🔄 Web Version" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "The latest version is also available online at: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/en/" >> RELEASE_NOTES.md
+      
+      - name: Prepare release files
+        run: |
+          # Make sure all the files are in the root of the build directory
+          mkdir -p build_release
+          
+          # Copy all book files from language directories to the release directory
+          # This makes them accessible at the root level for the release
+          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | while read file; do
+            cp "$file" build_release/
+          done
+          
+          # Rename files to use the file prefix if needed
+          PREFIX="${{ needs.setup.outputs.file_prefix || 'book' }}"
+          for file in build_release/*.pdf build_release/*.epub build_release/*.mobi build_release/*.html; do
+            if [ -f "$file" ]; then
+              # Get filename without path
+              filename=$(basename "$file")
+              # If filename is book.*, rename it to use prefix
+              if [[ "$filename" == "book."* ]]; then
+                extension="${filename##*.}"
+                mv "$file" "build_release/$PREFIX.$extension"
+              fi
+            fi
+          done
+          
+          ls -la build_release/
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build_release/*.pdf
+            build_release/*.epub
+            build_release/*.mobi
+            build_release/*.html
+          tag_name: ${{ needs.setup.outputs.version }}
+          name: ${{ needs.setup.outputs.book_title || 'Book' }} ${{ needs.setup.outputs.version }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+
+  deploy:
+    # Deploy to GitHub Pages for web viewing
+    needs: [build, release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: book-files
+          path: build
+
+      - name: Prepare web version
+        run: |
+          # Create index.html that redirects to the HTML version
+          PREFIX="${{ needs.setup.outputs.file_prefix || 'book' }}"
+          
+          # Find HTML file - prefer en/PREFIX.html, then en/book.html
+          HTML_FILE=""
+          if [ -f "build/en/$PREFIX.html" ]; then
+            HTML_FILE="en/$PREFIX.html"
+          elif [ -f "build/en/book.html" ]; then
+            HTML_FILE="en/book.html"
+          fi
+          
+          # Create index.html with redirect
+          if [ -n "$HTML_FILE" ]; then
+            # Create redirect HTML file
+            echo "<!DOCTYPE html>" > build/index.html
+            echo "<html>" >> build/index.html
+            echo "<head>" >> build/index.html
+            echo "  <meta charset=\"UTF-8\">" >> build/index.html
+            echo "  <meta http-equiv=\"refresh\" content=\"0; url=$HTML_FILE\">" >> build/index.html
+            echo "  <title>${{ needs.setup.outputs.book_title || 'Book' }}</title>" >> build/index.html
+            echo "</head>" >> build/index.html
+            echo "<body>" >> build/index.html
+            echo "  <p>Redirecting to <a href=\"$HTML_FILE\">the book</a>...</p>" >> build/index.html
+            echo "</body>" >> build/index.html
+            echo "</html>" >> build/index.html
+          else
+            # Create a simple index if no HTML book is found
+            echo "<!DOCTYPE html>" > build/index.html
+            echo "<html>" >> build/index.html
+            echo "<head>" >> build/index.html
+            echo "  <meta charset=\"UTF-8\">" >> build/index.html
+            echo "  <title>${{ needs.setup.outputs.book_title || 'Book' }}</title>" >> build/index.html
+            echo "  <style>" >> build/index.html
+            echo "    body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }" >> build/index.html
+            echo "    h1 { color: #333; }" >> build/index.html
+            echo "    .download { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }" >> build/index.html
+            echo "    a { color: #0366d6; text-decoration: none; }" >> build/index.html
+            echo "    a:hover { text-decoration: underline; }" >> build/index.html
+            echo "  </style>" >> build/index.html
+            echo "</head>" >> build/index.html
+            echo "<body>" >> build/index.html
+            echo "  <h1>${{ needs.setup.outputs.book_title || 'Book' }}</h1>" >> build/index.html
+            echo "  <p>By ${{ needs.setup.outputs.book_author || 'Author' }}</p>" >> build/index.html
+            echo "  <p>Built on ${{ needs.setup.outputs.date }}</p>" >> build/index.html
+            echo "  " >> build/index.html
+            echo "  <div class=\"download\">" >> build/index.html
+            echo "    <h2>Downloads</h2>" >> build/index.html
+            echo "    <p>Download the book in various formats from the <a href=\"https://github.com/${{ github.repository }}/releases/latest\">latest release</a>.</p>" >> build/index.html
+            echo "  </div>" >> build/index.html
+            echo "</body>" >> build/index.html
+            echo "</html>" >> build/index.html
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: build
+          branch: gh-pages
