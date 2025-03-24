@@ -20,6 +20,7 @@ outputs:
   epub: true
   mobi: true
   html: true
+  docx: true  # Now enabled
 
 # Languages to build
 # Add multiple language codes to build translations
@@ -53,6 +54,12 @@ html:
   toc_depth: 3  # Table of contents depth
   section_divs: true  # Put sections in div elements
   self_contained: true  # Create a standalone HTML file with no external dependencies
+
+# DOCX settings
+docx:
+  reference_doc: "templates/docx/reference.docx"  # Reference DOCX template (optional)
+  toc: true  # Include table of contents
+  toc_depth: 3  # Table of contents depth
 
 # Metadata
 metadata:
