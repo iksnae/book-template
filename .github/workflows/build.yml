@@ -1,0 +1,84 @@
+name: Build Book
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'book/**'
+      - 'templates/**'
+      - 'resources/**'
+      - 'book.yaml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'book/**'
+      - 'templates/**'
+      - 'resources/**'
+      - 'book.yaml'
+  workflow_dispatch:
+    inputs:
+      languages:
+        description: 'Build specific languages (comma-separated, leave empty for all)'
+        required: false
+        default: ''
+      formats:
+        description: 'Build specific formats (comma-separated, leave empty for all)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for proper versioning
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+    
+    - name: Setup pandoc
+      uses: r-lib/actions/setup-pandoc@v2
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Build book with all languages
+      if: github.event.inputs.languages == ''
+      run: |
+        ./build.sh --all-languages
+    
+    - name: Build book with specific languages
+      if: github.event.inputs.languages != ''
+      run: |
+        IFS=',' read -ra LANGS <<< "${{ github.event.inputs.languages }}"
+        for lang in "${LANGS[@]}"; do
+          echo "Building for language: $lang"
+          ./build.sh --lang="$lang"
+        done
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: book-outputs
+        path: |
+          build/**/*.pdf
+          build/**/*.epub
+          build/**/*.mobi
+          build/**/*.html
+    
+    - name: Build Summary
+      run: |
+        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Files generated:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Format | File | Size |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|------|------|" >> $GITHUB_STEP_SUMMARY
+        find build -type f \( -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" \) -not -path "*/\.*" | while read file; do
+          size=$(du -h "$file" | cut -f1)
+          echo "| ${file##*.} | ${file} | $size |" >> $GITHUB_STEP_SUMMARY
+        done
