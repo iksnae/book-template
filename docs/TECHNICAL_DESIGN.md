@@ -160,12 +160,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     
     - name: Use Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: '14.x'
+        node-version: '20.x'
     
     - name: Install dependencies
       run: npm install
@@ -174,7 +174,7 @@ jobs:
       run: npm run build -- --all-languages
       
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: book-outputs
         path: build/**/*
