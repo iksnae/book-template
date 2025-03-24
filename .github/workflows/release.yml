@@ -88,14 +88,10 @@ jobs:
   build:
     needs: setup
     runs-on: ubuntu-latest
+    container:
+      image: iksnae/book-builder:latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Pull book-builder Docker image
-        run: docker pull iksnae/book-builder:latest
       
       - name: Prepare environment
         run: |
@@ -115,8 +111,17 @@ jobs:
       - name: Build book
         run: |
           echo "Building book..."
-          # Use build.sh script through Docker
-          docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --all-languages"
+          # Use book-tools directly in the container
+          cd /book
+          echo 'Checking book-tools version...'
+          book-tools --version
+          
+          # Build all formats including DOCX
+          book-tools build --all-languages --formats=pdf,epub,mobi,html,docx
+          
+          # Check if DOCX files were generated
+          echo "Checking for DOCX files..."
+          find build/ -name "*.docx" -ls
           
       - name: List build artifacts
         run: |
@@ -133,7 +138,7 @@ jobs:
           
           # Show file sizes for main book formats
           echo "=== Book File Sizes ==="
-          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | xargs du -h 2>/dev/null || echo "Some files may be missing"
+          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" -o -name "*.docx" | xargs du -h 2>/dev/null || echo "Some files may be missing"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
