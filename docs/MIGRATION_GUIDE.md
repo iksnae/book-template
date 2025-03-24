@@ -1,15 +1,15 @@
-# Migration Guide: Using Docker-based book-tools in book-template
+# Migration Guide: Using book-tools in book-template
 
-This guide explains how the book-template repository has been migrated to use the standardized book-tools package and Docker-based approach instead of its custom build scripts.
+This guide explains how the book-template repository has been migrated to use the standardized book-tools package instead of its custom build scripts.
 
 ## Overview of Changes
 
 The following changes have been made:
 
-1. Updated `build.sh` to support both local Node.js and Docker-based builds
-2. Added GitHub Actions workflows for CI/CD that use the Docker container
-3. Made the configuration compatible with book-tools format
-4. Updated release process to match the book-tools approach
+1. Updated `build.sh` to use the book-tools CLI in the Docker container
+2. Added package.json with book-tools dependency for local development
+3. Updated GitHub Actions workflows to use the Docker-based approach
+4. Maintained backward compatibility with the existing configuration format
 
 ## What You Need to Know
 
@@ -19,23 +19,25 @@ If you're just using the book-template to build your books, you have two options
 
 #### Option 1: Using Docker (Recommended)
 
-The simplest way to build your book is with Docker, which includes all required dependencies:
+The simplest way to build your book is using Docker, which includes all required dependencies:
 
 ```bash
 ./build.sh
 ```
 
-The script will detect if Docker is installed and ask if you want to use the Docker-based build. If you choose yes, it will run the build process in a Docker container with all dependencies pre-installed.
+The script will detect if Docker is installed and ask if you want to use the Docker-based build. If you choose yes, it will run the book-tools build process in a Docker container with all dependencies pre-installed.
 
 This approach ensures consistent builds across different environments and eliminates the need to install dependencies locally.
 
 #### Option 2: Using Node.js
 
-If you prefer not to use Docker, you can still use the Node.js implementation:
+If you prefer not to use Docker:
 
 1. Install Node.js (version 14.x or higher)
 2. Run `npm install` in the book-template directory
 3. Run `./build.sh` (and select "no" when asked about Docker)
+
+This will use the Node.js implementation of book-tools to build your book.
 
 ### Command-Line Options
 
@@ -56,9 +58,10 @@ The command-line options remain the same as before:
 
 If you're contributing to the codebase:
 
-- The build process now primarily uses the Docker-based approach in CI/CD
+- The book-tools package provides the core functionality
 - For local development, both Docker and Node.js options are available
-- GitHub Actions workflows have been updated to use the Docker container
+- The legacy scripts in `tools/scripts/` are kept for backward compatibility
+- GitHub Actions workflows use the Docker container for CI/CD
 
 ## Directory Structure
 
@@ -81,7 +84,7 @@ book-template/
 
 ## Configuration Format
 
-The `book.yaml` format is compatible with both the old book-template system and the new book-tools system. You can continue using the same configuration file:
+The `book.yaml` format remains unchanged and compatible with both systems:
 
 ```yaml
 # Basic Information
@@ -113,7 +116,7 @@ languages:
 Two GitHub Actions workflows are now available:
 
 1. **Build Workflow**: Triggered when content changes or manually from the Actions tab
-   - Uses the Docker container for consistent builds
+   - Uses the book-tools CLI in the Docker container
    - Uploads build artifacts for review
    - Creates detailed build summaries
 
@@ -143,10 +146,10 @@ This will:
 
 The `iksnae/book-builder` Docker image contains:
 
+- The book-tools CLI
 - Pandoc (for Markdown conversion)
 - LaTeX (for PDF generation)
 - Calibre (for EPUB/MOBI handling)
-- Node.js (for running book-tools)
 - All other required dependencies
 
 This ensures consistent builds regardless of the local environment.
@@ -173,18 +176,12 @@ If you encounter issues:
    - Check the GitHub Actions logs for detailed error information
    - Verify that your repository has the correct permissions
 
-## Backward Compatibility
+## Legacy Scripts
 
-The migration maintains backward compatibility:
-
-- The same `build.sh` command still works
-- The same directory structure is used
-- The same configuration format is supported
-
-However, the implementation now leverages the more robust and standardized book-tools approach, particularly through Docker.
+The original build scripts in the `tools/scripts/` directory are kept for backward compatibility. These scripts are used as a fallback in the Docker container if the book-tools CLI is not available. This ensures that existing projects continue to work.
 
 ## Future Improvements
 
-Future improvements to the build system will be implemented in the `iksnae/book-tools` repository and automatically available in book-template through the Docker container.
+Future improvements to the build system will be implemented in the `iksnae/book-tools` repository, which can be used by book-template through the Docker container or as a Node.js dependency.
 
 This approach ensures that all book projects benefit from enhancements and bug fixes without requiring manual updates to individual repositories.
