@@ -26,7 +26,8 @@ We believe book creation should be simple: **Write your content, Push to GitHub,
 - **No Technical Knowledge Required**: Everything is set up and ready to use
 - **Support for Multiple Languages**: Create books in any language
 - **Free and Open Source**: No expensive publishing tools needed
-- **Convenient CLI Tool**: Manage your book builds with an easy-to-use command-line interface
+- **Docker-based Build System**: Consistent builds across all environments
+- **Seamless GitHub Integration**: Automatic builds, releases, and website deployment
 
 ## Getting Started in 3 Easy Steps
 
@@ -46,7 +47,7 @@ This starter kit gives you everything you need to create a professional book:
 - Cover page setup
 - Publishing to multiple formats with a single command
 - Cloud-based build system - no installations required
-- Interactive CLI tool for managing builds locally
+- Docker-based local build system for consistent results
 
 ## How It Works
 
@@ -66,58 +67,46 @@ Your book content goes in the `book/en/` folder (or other language folders):
 
 ## Building Your Book Locally
 
-You have several options to build your book locally:
+You have two main options to build your book locally:
 
-### Using the CLI Tool
+### Option 1: Using Docker (Recommended)
 
-The project includes a convenient CLI tool for managing your book builds:
+The easiest way to build your book is using Docker, which includes all required dependencies:
 
 ```bash
-# Navigate to the CLI directory
-cd tools/cli
+# Simply run the build script
+./build.sh
+```
 
-# Install dependencies
+The build script will detect Docker is installed and ask if you'd like to use it. This ensures a consistent build environment with all dependencies pre-installed.
+
+### Option 2: Using Node.js
+
+If you prefer not to use Docker:
+
+```bash
+# Install Node.js dependencies
 npm install
 
-# Run in interactive mode
-node index.js interactive
-
-# Create a new chapter
-node index.js create-chapter
-
-# Check chapter structure
-node index.js check-chapter -n 01
-
-# Get book information
-node index.js info
-
-# Clean build artifacts
-node index.js clean
-```
-
-For more details, see the [CLI Tool Documentation](./tools/cli/README.md).
-
-### Using Docker
-
-You can also build your book using Docker:
-
-```bash
-# Pull the image
-docker pull iksnae/book-builder:latest
-
-# Run a build in the current directory
-docker run --rm -v $(pwd):/workspace iksnae/book-builder:latest /workspace/build.sh
-
-# Or use the CLI tool through Docker
-docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest bash -c "cd /workspace && cd tools/cli && npm i && node index.js interactive"
-```
-
-### Direct Build Script
-
-You can also use the build script directly:
-
-```bash
+# Run the build script
 ./build.sh
+```
+
+When prompted about using Docker, select "no" to use the Node.js implementation.
+
+### Build Command Options
+
+The build command supports several options:
+
+```bash
+# Build all languages
+./build.sh --all-languages
+
+# Build a specific language
+./build.sh --lang=en
+
+# Skip specific formats
+./build.sh --skip-pdf --skip-epub
 ```
 
 ## Automatic Publishing
@@ -139,6 +128,21 @@ The process happens automatically without any intervention:
 
 Just write and push - we handle the rest!
 
+## Creating Releases
+
+To create a new release with all formats:
+
+```bash
+./tag-release.sh v1.0.0
+```
+
+This will:
+1. Tag your repository with the version
+2. Push the tag to GitHub
+3. Trigger the release workflow
+4. Create a GitHub release with all book formats
+5. Deploy the web version to GitHub Pages
+
 ## Customizing Your Book
 
 ### Basic Settings
@@ -159,13 +163,21 @@ Want to change the look and feel? Edit the templates:
 - `templates/epub/` - Style the e-reader versions
 - `templates/html/` - Customize the web version
 
-## Ready-To-Use Solution
+## Docker-based Build System
 
-Everything is already set up - all dependencies and tools are publicly available:
+This project uses the `iksnae/book-builder` Docker image, which contains:
 
-- All building happens through GitHub's automation system
-- Pre-configured workflows handle all technical details
-- No need to install any specialized software on your computer
+- Pandoc (for markdown conversion)
+- LaTeX (for PDF generation)
+- Calibre (for EPUB/MOBI handling)
+- Node.js with book-tools
+- All necessary dependencies
+
+This ensures consistent builds across different environments and eliminates the need to install dependencies locally.
+
+## Migration Notes
+
+This repository has been migrated to use the standardized book-tools package. For details about the migration, see [MIGRATION_GUIDE.md](./docs/MIGRATION_GUIDE.md).
 
 ## License
 
@@ -174,4 +186,3 @@ This starter kit is open source and available under the MIT License.
 ## Credits
 
 Developed in partnership with [Khaos Studio](http://khaos.studio).
-
