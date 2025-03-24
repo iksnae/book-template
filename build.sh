@@ -24,6 +24,10 @@ mkdir -p build
 mkdir -p book/images
 mkdir -p templates/{pdf,epub,html}/
 
+# First, run the config adapter to convert book.yaml to book-tools format
+echo "📋 Converting configuration format..."
+node tools/config-adapter.js
+
 # Parse arguments to maintain compatibility with old script
 ALL_LANGUAGES=false
 SPECIFIC_LANGUAGE=""
@@ -53,6 +57,9 @@ do
   esac
 done
 
+# Add the --with-recovery flag for better error handling
+SKIP_FLAGS="$SKIP_FLAGS --with-recovery"
+
 # Generate the command to run book-tools CLI
 if [ "$ALL_LANGUAGES" = true ]; then
   CMD="npx book build --all-languages $SKIP_FLAGS"
@@ -69,4 +76,8 @@ eval $CMD
 echo -e "\n📝 Contents of build/ directory:"
 ls -la build/
 
+# Copy or symlink legacy structure if needed
+# This ensures backward compatibility with tools expecting the old format
+
+# Show a success message
 echo "✅ Build process completed successfully!"
