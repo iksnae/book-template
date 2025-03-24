@@ -40,17 +40,17 @@ jobs:
           if [ -f "book.yaml" ]; then
             echo "Using configuration from book.yaml"
             # Extract book title
-            BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
+            BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
             echo "book_title=$BOOK_TITLE" >> $GITHUB_OUTPUT
             echo "BOOK_TITLE=$BOOK_TITLE" >> $GITHUB_ENV
             
             # Extract book author
-            BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
+            BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
             echo "book_author=$BOOK_AUTHOR" >> $GITHUB_OUTPUT
             echo "BOOK_AUTHOR=$BOOK_AUTHOR" >> $GITHUB_ENV
             
             # Extract file prefix
-            FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/"//g')
+            FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
             if [ -n "$FILE_PREFIX" ]; then
               echo "file_prefix=$FILE_PREFIX" >> $GITHUB_OUTPUT
               echo "FILE_PREFIX=$FILE_PREFIX" >> $GITHUB_ENV
