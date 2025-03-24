@@ -6,24 +6,20 @@
 # Make the script exit on error
 set -e
 
-# Parse command line arguments
-ALL_LANGUAGES=false
-SPECIFIC_LANGUAGE=""
+# Default values
 SKIP_PDF=false
 SKIP_EPUB=false
 SKIP_MOBI=false
 SKIP_HTML=false
 SKIP_DOCX=false
+ALL_LANGUAGES=false
+VERBOSE=false
+LANGUAGE="en"  # Default language
 
-for arg in "$@"
-do
-  case $arg in
-    --all-languages)
-      ALL_LANGUAGES=true
-      ;;
-    --lang=*)
-      SPECIFIC_LANGUAGE="${arg#*=}"
-      ;;
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  case $key in
     --skip-pdf)
       SKIP_PDF=true
       ;;
@@ -39,7 +35,21 @@ do
     --skip-docx)
       SKIP_DOCX=true
       ;;
+    --all-languages)
+      ALL_LANGUAGES=true
+      ;;
+    --verbose)
+      VERBOSE=true
+      ;;
+    --lang=*)
+      LANGUAGE="${key#*=}"
+      ;;
+    *)
+      echo "Unknown option: $key"
+      exit 1
+      ;;
   esac
+  shift
 done
 
 # Create necessary directories
@@ -238,5 +248,67 @@ for lang in $(ls -1 book/ 2>/dev/null || echo "en"); do
     ls -la "build/$lang/"
   fi
 done
+
+# Generate formats for the specified language
+if [ "$ALL_LANGUAGES" = false ]; then
+  echo "📚 Generating formats for language: $LANGUAGE"
+  
+  # Generate PDF
+  if [ "$SKIP_PDF" = false ]; then
+    tools/scripts/generate-pdf.sh --lang="$LANGUAGE" || true
+  fi
+
+  # Generate EPUB
+  if [ "$SKIP_EPUB" = false ]; then
+    tools/scripts/generate-epub.sh --lang="$LANGUAGE" || true
+  fi
+
+  # Generate MOBI
+  if [ "$SKIP_MOBI" = false ]; then
+    tools/scripts/generate-mobi.sh --lang="$LANGUAGE" || true
+  fi
+
+  # Generate HTML
+  if [ "$SKIP_HTML" = false ]; then
+    tools/scripts/generate-html.sh --lang="$LANGUAGE" || true
+  fi
+
+  # Generate DOCX
+  if [ "$SKIP_DOCX" = false ]; then
+    tools/scripts/generate-docx.sh --lang="$LANGUAGE" || true
+  fi
+else
+  # Handle all languages
+  for lang in $(ls -1 book/ 2>/dev/null || echo "en"); do
+    if [ -d "book/$lang" ] && [ "$lang" != "images" ]; then
+      echo "📚 Generating formats for language: $lang"
+      
+      # Generate PDF
+      if [ "$SKIP_PDF" = false ]; then
+        tools/scripts/generate-pdf.sh --lang="$lang" || true
+      fi
+
+      # Generate EPUB
+      if [ "$SKIP_EPUB" = false ]; then
+        tools/scripts/generate-epub.sh --lang="$lang" || true
+      fi
+
+      # Generate MOBI
+      if [ "$SKIP_MOBI" = false ]; then
+        tools/scripts/generate-mobi.sh --lang="$lang" || true
+      fi
+
+      # Generate HTML
+      if [ "$SKIP_HTML" = false ]; then
+        tools/scripts/generate-html.sh --lang="$lang" || true
+      fi
+
+      # Generate DOCX
+      if [ "$SKIP_DOCX" = false ]; then
+        tools/scripts/generate-docx.sh --lang="$lang" || true
+      fi
+    fi
+  done
+fi
 
 echo "✅ Build process completed successfully!"
