@@ -88,10 +88,14 @@ jobs:
   build:
     needs: setup
     runs-on: ubuntu-latest
-    container:
-      image: iksnae/book-builder:latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Pull book-builder Docker image
+        run: docker pull iksnae/book-builder:latest
       
       - name: Prepare environment
         run: |
@@ -104,25 +108,20 @@ jobs:
               mkdir -p "build/$lang"
             fi
           done
-          
-          # Make sure the build script is executable
-          chmod +x build.sh
 
       - name: Build book
         run: |
           echo "Building book..."
-          # Use book-tools directly in the container
-          cd /book
-          echo 'Checking book-tools version...'
-          book-tools --version
-          
-          # Build all formats including DOCX
-          book-tools build --all-languages --formats=pdf,epub,mobi,html,docx
+          # Use book-tools through Docker with explicit DOCX generation
+          docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && \
+            echo 'Checking book-tools version...' && \
+            book-tools --version && \
+            book-tools build --all-languages --formats=pdf,epub,mobi,html,docx"
           
           # Check if DOCX files were generated
           echo "Checking for DOCX files..."
           find build/ -name "*.docx" -ls
-          
+
       - name: List build artifacts
         run: |
           echo "=== Build Directory Contents ==="
