@@ -52,8 +52,23 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Load configuration
+if [ -f "book.yaml" ]; then
+  echo "📚 Loading configuration from book.yaml..."
+  BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+  FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+  
+  if [ -z "$FILE_PREFIX" ]; then
+    FILE_PREFIX=$(echo "$BOOK_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')
+  fi
+else
+  echo "⚠️ No book.yaml found, using default values"
+  BOOK_TITLE="My Book"
+  FILE_PREFIX="book"
+fi
+
 # Create necessary directories
-mkdir -p build
+mkdir -p "build/$LANGUAGE"
 mkdir -p book/images
 mkdir -p templates/{pdf,epub,html,docx}/
 
@@ -249,66 +264,53 @@ for lang in $(ls -1 book/ 2>/dev/null || echo "en"); do
   fi
 done
 
-# Generate formats for the specified language
-if [ "$ALL_LANGUAGES" = false ]; then
-  echo "📚 Generating formats for language: $LANGUAGE"
+# Function to generate formats for a specific language
+generate_formats() {
+  local lang=$1
+  echo "📚 Generating formats for language: $lang"
   
-  # Generate PDF
+  # First combine markdown files
+  tools/scripts/combine-markdown.sh --lang="$lang" || true
+  
+  # Then generate each format using the combined markdown
   if [ "$SKIP_PDF" = false ]; then
-    tools/scripts/generate-pdf.sh --lang="$LANGUAGE" || true
+    tools/scripts/generate-pdf.sh --lang="$lang" || true
   fi
-
-  # Generate EPUB
+  
   if [ "$SKIP_EPUB" = false ]; then
-    tools/scripts/generate-epub.sh --lang="$LANGUAGE" || true
+    tools/scripts/generate-epub.sh --lang="$lang" || true
   fi
-
-  # Generate MOBI
+  
   if [ "$SKIP_MOBI" = false ]; then
-    tools/scripts/generate-mobi.sh --lang="$LANGUAGE" || true
+    tools/scripts/generate-mobi.sh --lang="$lang" || true
   fi
-
-  # Generate HTML
+  
   if [ "$SKIP_HTML" = false ]; then
-    tools/scripts/generate-html.sh --lang="$LANGUAGE" || true
+    tools/scripts/generate-html.sh --lang="$lang" || true
   fi
-
-  # Generate DOCX
+  
   if [ "$SKIP_DOCX" = false ]; then
-    tools/scripts/generate-docx.sh --lang="$LANGUAGE" || true
+    # Pass the correct file prefix to generate-docx.sh
+    tools/scripts/generate-docx.sh --lang="$lang" || true
   fi
-else
-  # Handle all languages
-  for lang in $(ls -1 book/ 2>/dev/null || echo "en"); do
-    if [ -d "book/$lang" ] && [ "$lang" != "images" ]; then
-      echo "📚 Generating formats for language: $lang"
-      
-      # Generate PDF
-      if [ "$SKIP_PDF" = false ]; then
-        tools/scripts/generate-pdf.sh --lang="$lang" || true
-      fi
+}
 
-      # Generate EPUB
-      if [ "$SKIP_EPUB" = false ]; then
-        tools/scripts/generate-epub.sh --lang="$lang" || true
-      fi
-
-      # Generate MOBI
-      if [ "$SKIP_MOBI" = false ]; then
-        tools/scripts/generate-mobi.sh --lang="$lang" || true
-      fi
-
-      # Generate HTML
-      if [ "$SKIP_HTML" = false ]; then
-        tools/scripts/generate-html.sh --lang="$lang" || true
-      fi
-
-      # Generate DOCX
-      if [ "$SKIP_DOCX" = false ]; then
-        tools/scripts/generate-docx.sh --lang="$lang" || true
-      fi
+# Main build process
+if [ "$ALL_LANGUAGES" = true ]; then
+  echo "Building all languages..."
+  # Get list of language directories
+  languages=$(ls -1 book/ 2>/dev/null | grep -v "images" || echo "en")
+  echo "Languages to build: $languages"
+  
+  for lang in $languages; do
+    if [ -d "book/$lang" ]; then
+      echo "📚 Building $lang version..."
+      generate_formats "$lang"
     fi
   done
+else
+  echo "📚 Building $LANGUAGE version..."
+  generate_formats "$LANGUAGE"
 fi
 
 echo "✅ Build process completed successfully!"
