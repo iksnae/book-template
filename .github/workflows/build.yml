@@ -31,8 +31,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: iksnae/book-builder:latest
     
     steps:
     - name: Checkout repository
@@ -75,41 +73,39 @@ jobs:
         # Make sure the build script is executable
         chmod +x build.sh
     
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+      
     - name: Build book (all languages)
       if: github.event.inputs.languages == ''
       run: |
-        ./build.sh --docker --all-languages
-        
         # Add skip flags if specified
+        SKIP_FLAGS=""
         if [ -n "${{ github.event.inputs.formats }}" ]; then
-          SKIP_FLAGS=""
           IFS=',' read -ra FORMATS <<< "${{ github.event.inputs.formats }}"
           for format in "${FORMATS[@]}"; do
             SKIP_FLAGS="$SKIP_FLAGS --skip-$format"
           done
-          ./build.sh --docker --all-languages $SKIP_FLAGS
-        else
-          ./build.sh --docker --all-languages
         fi
+        
+        docker run --rm -v "$(pwd):/book" iksnae/book-builder bash -c "cd /book && ./build.sh --docker --all-languages $SKIP_FLAGS"
     
     - name: Build book (specific languages)
       if: github.event.inputs.languages != ''
       run: |
+        # Add skip flags if specified
+        SKIP_FLAGS=""
+        if [ -n "${{ github.event.inputs.formats }}" ]; then
+          IFS=',' read -ra FORMATS <<< "${{ github.event.inputs.formats }}"
+          for format in "${FORMATS[@]}"; do
+            SKIP_FLAGS="$SKIP_FLAGS --skip-$format"
+          done
+        fi
+        
         IFS=',' read -ra LANGS <<< "${{ github.event.inputs.languages }}"
         for lang in "${LANGS[@]}"; do
           echo "Building for language: $lang"
-          
-          # Add skip flags if specified
-          if [ -n "${{ github.event.inputs.formats }}" ]; then
-            SKIP_FLAGS=""
-            IFS=',' read -ra FORMATS <<< "${{ github.event.inputs.formats }}"
-            for format in "${FORMATS[@]}"; do
-              SKIP_FLAGS="$SKIP_FLAGS --skip-$format"
-            done
-            ./build.sh --docker --lang="$lang" $SKIP_FLAGS
-          else
-            ./build.sh --docker --lang="$lang"
-          fi
+          docker run --rm -v "$(pwd):/book" iksnae/book-builder bash -c "cd /book && ./build.sh --docker --lang=$lang $SKIP_FLAGS"
         done
     
     - name: List build artifacts
