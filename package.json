@@ -1,0 +1,42 @@
+{
+  "name": "book-template",
+  "version": "1.0.0",
+  "description": "A template for creating and publishing books",
+  "main": "index.js",
+  "scripts": {
+    "build": "node_modules/.bin/book build",
+    "interactive": "node_modules/.bin/book interactive",
+    "create-chapter": "node_modules/.bin/book create-chapter",
+    "check-chapter": "node_modules/.bin/book check-chapter",
+    "info": "node_modules/.bin/book info",
+    "clean": "node_modules/.bin/book clean",
+    "validate": "node_modules/.bin/book validate",
+    "legacy-build": "./build.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iksnae/book-template.git"
+  },
+  "keywords": [
+    "book",
+    "ebook",
+    "markdown",
+    "pdf",
+    "epub",
+    "mobi",
+    "html",
+    "publishing"
+  ],
+  "author": "Khaos Studios",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iksnae/book-template/issues"
+  },
+  "homepage": "https://github.com/iksnae/book-template#readme",
+  "dependencies": {
+    "book-tools": "github:iksnae/book-tools#main"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
