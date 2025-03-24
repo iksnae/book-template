@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Main build script for book-template
-# This is a wrapper around the book-tools build system
+# This wrapper script uses the book-tools system
 
 # Make the script exit on error
 set -e
@@ -9,7 +9,10 @@ set -e
 # Parse command line arguments
 ALL_LANGUAGES=false
 SPECIFIC_LANGUAGE=""
-SKIP_FLAGS=""
+SKIP_PDF=false
+SKIP_EPUB=false
+SKIP_MOBI=false
+SKIP_HTML=false
 
 for arg in "$@"
 do
@@ -21,33 +24,63 @@ do
       SPECIFIC_LANGUAGE="${arg#*=}"
       ;;
     --skip-pdf)
-      SKIP_FLAGS="$SKIP_FLAGS --skip-pdf"
+      SKIP_PDF=true
       ;;
     --skip-epub)
-      SKIP_FLAGS="$SKIP_FLAGS --skip-epub"
+      SKIP_EPUB=true
       ;;
     --skip-mobi)
-      SKIP_FLAGS="$SKIP_FLAGS --skip-mobi"
+      SKIP_MOBI=true
       ;;
     --skip-html)
-      SKIP_FLAGS="$SKIP_FLAGS --skip-html"
+      SKIP_HTML=true
       ;;
   esac
 done
 
-# Check if we're in a Docker container or if using docker build
+# Create necessary directories
+mkdir -p build
+mkdir -p book/images
+mkdir -p templates/{pdf,epub,html}/
+
+# Check if we're in a Docker container or if using Docker build
 if [ -f "/.dockerenv" ] || [ "$1" = "--docker" ]; then
   echo "📦 Running in Docker container"
-  
-  # Create necessary directories
-  mkdir -p build
-  mkdir -p book/images
-  mkdir -p templates/{pdf,epub,html}/
-  
-  # Use the original book-template scripts for Docker builds
-  # This ensures compatibility with the Docker container
-  if [ -f "tools/scripts/build.sh" ]; then
-    echo "📚 Using legacy build script in Docker container"
+
+  if [ -f "/usr/local/bin/book" ]; then
+    echo "📚 Using book-tools in Docker container"
+    
+    # Build command with book-tools CLI
+    if [ "$ALL_LANGUAGES" = true ]; then
+      CMD="book build --all-languages"
+    elif [ -n "$SPECIFIC_LANGUAGE" ]; then
+      CMD="book build --lang=$SPECIFIC_LANGUAGE"
+    else
+      CMD="book build"
+    fi
+    
+    # Add skip flags
+    if [ "$SKIP_PDF" = true ]; then
+      CMD="$CMD --skip-pdf"
+    fi
+    
+    if [ "$SKIP_EPUB" = true ]; then
+      CMD="$CMD --skip-epub"
+    fi
+    
+    if [ "$SKIP_MOBI" = true ]; then
+      CMD="$CMD --skip-mobi"
+    fi
+    
+    if [ "$SKIP_HTML" = true ]; then
+      CMD="$CMD --skip-html"
+    fi
+    
+    echo "📚 Running book-tools: $CMD"
+    eval $CMD
+  else
+    # Fallback to legacy scripts if book-tools is not installed
+    echo "📚 Using legacy build scripts in Docker container"
     chmod +x tools/scripts/*.sh
     
     # Generate the build command using the original scripts
@@ -59,29 +92,25 @@ if [ -f "/.dockerenv" ] || [ "$1" = "--docker" ]; then
       CMD="tools/scripts/build.sh"
     fi
     
-    # Add skip flags if needed (convert to legacy format)
-    if [[ $SKIP_FLAGS == *"--skip-pdf"* ]]; then
+    # Add skip flags if needed
+    if [ "$SKIP_PDF" = true ]; then
       CMD="$CMD --skip-pdf"
     fi
     
-    if [[ $SKIP_FLAGS == *"--skip-epub"* ]]; then
+    if [ "$SKIP_EPUB" = true ]; then
       CMD="$CMD --skip-epub"
     fi
     
-    if [[ $SKIP_FLAGS == *"--skip-mobi"* ]]; then
+    if [ "$SKIP_MOBI" = true ]; then
       CMD="$CMD --skip-mobi"
     fi
     
-    if [[ $SKIP_FLAGS == *"--skip-html"* ]]; then
+    if [ "$SKIP_HTML" = true ]; then
       CMD="$CMD --skip-html"
     fi
     
     echo "📚 Running build command: $CMD"
     eval $CMD
-  else
-    echo "❌ Error: Build scripts not found in Docker container"
-    echo "Please ensure the book-template repository is properly set up"
-    exit 1
   fi
 else
   # Check if Node.js is installed
@@ -97,11 +126,6 @@ else
     npm install
   fi
   
-  # Create necessary directories
-  mkdir -p build
-  mkdir -p book/images
-  mkdir -p templates/{pdf,epub,html}/
-  
   # Check if we should use Docker
   if command -v docker &> /dev/null; then
     echo "🐳 Docker detected, would you like to use the Docker container to build? (y/n)"
@@ -111,7 +135,38 @@ else
       echo "🐳 Using Docker build..."
       
       # Use Docker to run the build
-      docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --docker $*"
+      CMD="docker run --rm -v \"$(pwd):/book\" iksnae/book-builder:latest bash -c \"cd /book && ./build.sh --docker"
+      
+      # Add all languages flag
+      if [ "$ALL_LANGUAGES" = true ]; then
+        CMD="$CMD --all-languages"
+      fi
+      
+      # Add language selection
+      if [ -n "$SPECIFIC_LANGUAGE" ]; then
+        CMD="$CMD --lang=$SPECIFIC_LANGUAGE"
+      fi
+      
+      # Add skip flags
+      if [ "$SKIP_PDF" = true ]; then
+        CMD="$CMD --skip-pdf"
+      fi
+      
+      if [ "$SKIP_EPUB" = true ]; then
+        CMD="$CMD --skip-epub"
+      fi
+      
+      if [ "$SKIP_MOBI" = true ]; then
+        CMD="$CMD --skip-mobi"
+      fi
+      
+      if [ "$SKIP_HTML" = true ]; then
+        CMD="$CMD --skip-html"
+      fi
+      
+      CMD="$CMD\""
+      echo "📚 Running: $CMD"
+      eval $CMD
       exit $?
     fi
   fi
@@ -129,19 +184,19 @@ else
   fi
   
   # Add skip flags
-  if [[ $SKIP_FLAGS == *"--skip-pdf"* ]]; then
+  if [ "$SKIP_PDF" = true ]; then
     CMD="$CMD --skip-pdf"
   fi
   
-  if [[ $SKIP_FLAGS == *"--skip-epub"* ]]; then
+  if [ "$SKIP_EPUB" = true ]; then
     CMD="$CMD --skip-epub"
   fi
   
-  if [[ $SKIP_FLAGS == *"--skip-mobi"* ]]; then
+  if [ "$SKIP_MOBI" = true ]; then
     CMD="$CMD --skip-mobi"
   fi
   
-  if [[ $SKIP_FLAGS == *"--skip-html"* ]]; then
+  if [ "$SKIP_HTML" = true ]; then
     CMD="$CMD --skip-html"
   fi
   
