@@ -1,14 +1,18 @@
-name: Build Book
+name: Build Book (Disabled)
+
+# This workflow is currently disabled as we're using the release workflow for all builds.
+# The release workflow is configured to run on main branch pushes and handles both building and releasing.
+# Re-enable this workflow if you need a separate build pipeline for development branches.
 
 on:
-  push:
-    # Run on any branch when book content or build files change
-    paths:
-      - 'book/**'
-      - 'templates/**'
-      - 'resources/**'
-      - '.github/workflows/build.yml'
-      - 'book.yaml'
+  # Workflow disabled - previously ran on:
+  # push:
+  #   paths:
+  #     - 'book/**'
+  #     - 'templates/**'
+  #     - 'resources/**'
+  #     - '.github/workflows/build.yml'
+  workflow_dispatch:  # Manual trigger only, for testing
   pull_request:
     paths:
       - 'book/**'
@@ -16,17 +20,6 @@ on:
       - 'resources/**'
       - '.github/workflows/build.yml'
       - 'book.yaml'
-  workflow_dispatch:
-    # Allow manual triggering
-    inputs:
-      languages:
-        description: 'Build specific languages (comma-separated, leave empty for all)'
-        required: false
-        default: ''
-      formats:
-        description: 'Skip specific formats (comma-separated, e.g., pdf,epub)'
-        required: false
-        default: ''
 
 jobs:
   build:

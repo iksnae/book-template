@@ -2,9 +2,11 @@ name: Create Book Release
 
 on:
   push:
+    branches:
+      - main  # Run when pushing to main branch
     tags:
-      - 'v*' # Run when tag is pushed
-  workflow_dispatch:
+      - 'v*'  # Also run when tag is pushed
+  workflow_dispatch:  # Keep manual trigger as backup
     inputs:
       version:
         description: 'Release version (e.g. v1.0.0)'
@@ -75,8 +77,11 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             VERSION=${{ github.event.inputs.version }}
-          else
+          elif [ "${{ github.event_name }}" == "push" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/}
+          else
+            # For pushes to main, use date-based version
+            VERSION="v$(date +'%Y.%m.%d-%H%M')"
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "version=$VERSION" >> $GITHUB_OUTPUT
