@@ -290,7 +290,6 @@ generate_formats() {
   fi
   
   if [ "$SKIP_DOCX" = false ]; then
-    # Pass the correct file prefix to generate-docx.sh
     tools/scripts/generate-docx.sh --lang="$lang" || true
   fi
 }

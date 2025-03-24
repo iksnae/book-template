@@ -35,79 +35,60 @@ done
 # Load configuration
 if [ -f "book.yaml" ]; then
   echo "📚 Loading configuration from book.yaml..."
-  
-  # Extract book title
   BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
-  
-  # Extract book author
-  BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
-  
-  # Extract file prefix
+  AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
   FILE_PREFIX=$(grep 'file_prefix:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+  
   if [ -z "$FILE_PREFIX" ]; then
     FILE_PREFIX=$(echo "$BOOK_TITLE" | tr '[:upper:]' '[:lower:]' | sed 's/ /-/g')
   fi
 else
   echo "⚠️ No book.yaml found, using default values"
   BOOK_TITLE="My Book"
-  BOOK_AUTHOR="Author Name"
-  FILE_PREFIX="my-book"
+  AUTHOR="Author"
+  FILE_PREFIX="book"
 fi
 
-# Set up paths
-BUILD_DIR="build/$LANGUAGE"
-COMBINED_MD="$BUILD_DIR/combined.md"
+# Setup paths
+BUILD_DIR="build"
+INPUT_FILE="$BUILD_DIR/$FILE_PREFIX.md"
 OUTPUT_FILE="$BUILD_DIR/$FILE_PREFIX.docx"
 
-# Check if combined markdown exists
-if [ ! -f "$COMBINED_MD" ]; then
-  echo "❌ Error: Combined markdown file not found at $COMBINED_MD"
-  echo "Please run combine-markdown.sh first"
+echo "📝 Generating DOCX for $LANGUAGE..."
+echo "  - Input file: $INPUT_FILE"
+echo "  - Output file: $OUTPUT_FILE"
+
+# Check if input file exists
+if [ ! -f "$INPUT_FILE" ]; then
+  echo "❌ Error: Input file $INPUT_FILE not found!"
   exit 1
 fi
 
-# Create reference.docx if it doesn't exist
+# Create default reference doc if it doesn't exist
 if [ ! -f "$REFERENCE_DOC" ]; then
-  echo "📝 Creating default reference.docx..."
+  echo "📄 Creating default reference document..."
   mkdir -p "$(dirname "$REFERENCE_DOC")"
   pandoc -o "$REFERENCE_DOC" --print-default-data-file reference.docx
 fi
 
-echo "📝 Generating DOCX file..."
-echo "   Input: $COMBINED_MD"
-echo "   Output: $OUTPUT_FILE"
-echo "   Reference: $REFERENCE_DOC"
-
-# Build pandoc command
-CMD="pandoc \"$COMBINED_MD\" \
-  -f markdown \
-  -t docx \
-  -o \"$OUTPUT_FILE\" \
-  --reference-doc=\"$REFERENCE_DOC\" \
-  --table-of-contents \
+# Generate DOCX file
+echo "📄 Generating DOCX file..."
+pandoc "$INPUT_FILE" \
+  -o "$OUTPUT_FILE" \
+  --from markdown \
+  --to docx \
+  --reference-doc="$REFERENCE_DOC" \
+  --toc \
   --toc-depth=3 \
-  --metadata title=\"$BOOK_TITLE\" \
-  --metadata author=\"$BOOK_AUTHOR\" \
-  --number-sections \
-  --standalone"
+  --metadata title="$BOOK_TITLE" \
+  --metadata author="$AUTHOR" \
+  --metadata lang="$LANGUAGE" \
+  --resource-path=".:book:book/$LANGUAGE:build:book/$LANGUAGE/images:book/images:build/images:build/$LANGUAGE/images"
 
-if [ "$VERBOSE" = true ]; then
-  echo "🔍 Running command: $CMD"
-fi
-
-# Run pandoc
-eval $CMD
-
-# Check if the file was created
-if [ -f "$OUTPUT_FILE" ]; then
-  echo "✅ DOCX file generated successfully: $OUTPUT_FILE"
-  
-  # Get file size
-  if command -v du &> /dev/null; then
-    SIZE=$(du -h "$OUTPUT_FILE" | cut -f1)
-    echo "📊 File size: $SIZE"
-  fi
+if [ $? -eq 0 ]; then
+  echo "✅ DOCX created successfully at $OUTPUT_FILE"
+  echo "📊 DOCX file size: $(du -h "$OUTPUT_FILE" | cut -f1)"
 else
-  echo "❌ Error: Failed to generate DOCX file"
+  echo "❌ Error: DOCX generation failed!"
   exit 1
 fi 
