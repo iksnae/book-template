@@ -112,11 +112,13 @@ jobs:
       - name: Build book
         run: |
           echo "Building book..."
-          # Use book-tools through Docker with explicit DOCX generation
+          # Use build.sh script through Docker with the container providing dependencies
           docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && \
-            echo 'Checking book-tools version...' && \
-            book-tools --version && \
-            book-tools build --all-languages --formats=pdf,epub,mobi,html,docx"
+            echo 'Checking pandoc version and formats...' && \
+            pandoc --version && \
+            echo 'Available pandoc output formats:' && \
+            pandoc --list-output-formats && \
+            ./build.sh --all-languages"
           
           # Check if DOCX files were generated
           echo "Checking for DOCX files..."
