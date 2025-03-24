@@ -30,7 +30,7 @@ After creating your repository from this template:
    - Place general images in `book/en/images/`
 
 3. **Add your book cover**:
-   - Replace `art/cover.png` with your book cover (keep the same filename)
+   - Replace `book/images/cover.png` with your book cover (keep the same filename)
 
 ## Building Your Book Locally
 
@@ -38,21 +38,23 @@ You have several options to build and test your book locally:
 
 ### Option 1: Using the CLI Tool (Recommended)
 
-The project includes a convenient CLI tool:
+The project uses the `book-tools` package with a convenient CLI:
 
 ```bash
-# From your project root
-cd tools/cli
+# Install dependencies first
 npm install
-node index.js interactive
-```
 
-Or use the shortcut from the project root:
+# Build your book
+npm run build
 
-```bash
-# Make sure dependencies are installed first
-cd tools/cli && npm install && cd ../..
-./book-cli interactive
+# Or build interactively
+npm run interactive
+
+# Create a new chapter
+npm run create-chapter
+
+# Validate configuration
+npm run validate
 ```
 
 ### Option 2: Using Docker
@@ -92,6 +94,38 @@ Each time you publish changes, your book will be available in these formats:
 - MOBI: For Kindle devices
 - HTML: Online web version
 
+## Managing Chapters
+
+You can use the CLI to manage your chapters:
+
+```bash
+# Create a new chapter
+npm run create-chapter
+
+# Check chapter structure
+npm run check-chapter
+```
+
+## Customizing Format Settings
+
+The `book.yaml` file supports detailed format-specific settings:
+
+```yaml
+formatSettings:
+  pdf:
+    paperSize: "letter"
+    marginTop: "1in"
+    fontSize: "11pt"
+  
+  epub:
+    coverImage: "book/images/cover.png"
+    tocDepth: 3
+  
+  html:
+    toc: true
+    selfContained: true
+```
+
 ## Sharing Your Book
 
 Once built, you can:
@@ -102,4 +136,7 @@ Once built, you can:
 
 ## Next Steps
 
-For more advanced customization, refer to the full documentation in README.md.
+For more advanced customization, refer to:
+- The full documentation in [README.md](./README.md)
+- The [Configuration Documentation](https://github.com/iksnae/book-tools/blob/main/docs/CONFIGURATION.md)
+- The [Migration Guide](./docs/MIGRATION_GUIDE.md) if you're upgrading
