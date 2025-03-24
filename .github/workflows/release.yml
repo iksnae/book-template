@@ -19,8 +19,6 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    container:
-      image: iksnae/book-builder:latest
     outputs:
       version: ${{ steps.version.outputs.version }}
       date: ${{ steps.version.outputs.date }}
@@ -90,10 +88,11 @@ jobs:
   build:
     needs: setup
     runs-on: ubuntu-latest
-    container:
-      image: iksnae/book-builder:latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
       
       - name: Prepare environment
         run: |
@@ -113,7 +112,7 @@ jobs:
       - name: Build book
         run: |
           echo "Building book..."
-          ./build.sh --docker --all-languages
+          docker run --rm -v "$(pwd):/book" iksnae/book-builder bash -c "cd /book && ./build.sh --docker --all-languages"
           
       - name: List build artifacts
         run: |
