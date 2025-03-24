@@ -1,24 +1,27 @@
-# Migration to Docker-based book-tools
+# Migration to book-tools
 
-This PR completes the migration from the bespoke build system to the standardized Docker-based book-tools solution, as outlined in issue #18 and the migration strategy in issue #19.
+This PR completes the migration from the bespoke build system to the standardized book-tools solution, as outlined in issue #18 and the migration strategy in issue #19.
 
 ## Changes Made
 
 ### Core Implementation Changes
 
 1. **Build Script Migration**
-   - Updated `build.sh` to support both Docker and Node.js implementations
-   - Added automatic Docker detection and prompting
+   - Updated `build.sh` to use the book-tools CLI in Docker container
+   - Added support for both Docker and Node.js implementations
    - Maintained backward compatibility with existing command line options
+   - Added automatic Docker detection and prompting
 
 2. **GitHub Actions Integration**
-   - Updated build workflow to use the Docker container
-   - Updated release workflow to match book-tools approach
+   - Updated build workflow to use book-tools in Docker container
+   - Updated release workflow to use book-tools in Docker container
    - Added detailed build summaries and artifacts
+   - Ensured proper GitHub Pages deployment
 
 3. **Configuration Compatibility**
    - Maintained backward compatibility with existing `book.yaml` format
    - Ensured directory structure remains the same
+   - Kept legacy scripts as fallback for backward compatibility
 
 ### Documentation Updates
 
@@ -40,8 +43,8 @@ This PR completes the migration from the bespoke build system to the standardize
 
 The migration has been tested with:
 
-- Docker-based builds
-- Node.js-based builds
+- Docker-based builds using book-tools
+- Node.js-based builds using book-tools
 - Different build options (languages, formats)
 - GitHub Actions workflows
 
@@ -51,6 +54,7 @@ The migration has been tested with:
 2. **Simplicity**: Users can build without installing dependencies
 3. **Maintainability**: Features developed in book-tools are automatically available
 4. **Docker Integration**: Seamless integration with CI/CD systems
+5. **Standardization**: All book projects now use the same underlying build system
 
 ## What's Next
 
@@ -65,6 +69,7 @@ There are no breaking changes for existing users. The migration maintains backwa
 - Existing command line options
 - Directory structure
 - Configuration format
+- Legacy scripts
 
 ## How to Test
 
