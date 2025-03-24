@@ -1,0 +1,91 @@
+name: Release Book
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.0.0)'
+        required: true
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for proper versioning
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+    
+    - name: Setup pandoc
+      uses: r-lib/actions/setup-pandoc@v2
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Build book with all languages
+      run: |
+        ./build.sh --all-languages
+    
+    - name: Determine version
+      id: get-version
+      run: |
+        if [[ "${{ github.event_name }}" == "push" ]]; then
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get-version.outputs.version }}
+        release_name: Release ${{ steps.get-version.outputs.version }}
+        draft: false
+        prerelease: false
+        body: |
+          ## ${{ github.event.repository.name }} ${{ steps.get-version.outputs.version }}
+          
+          ### What's Changed
+          
+          * Built with book-tools
+          * Includes PDF, EPUB, MOBI, and HTML formats
+          * Supports multiple languages
+    
+    - name: Upload PDF Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/en/write-and-publish.pdf
+        asset_name: write-and-publish-${{ steps.get-version.outputs.version }}.pdf
+        asset_content_type: application/pdf
+    
+    - name: Upload EPUB Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/en/write-and-publish.epub
+        asset_name: write-and-publish-${{ steps.get-version.outputs.version }}.epub
+        asset_content_type: application/epub+zip
+    
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      with:
+        branch: gh-pages
+        folder: build
+        commit-message: "Deploy book to GitHub Pages for version ${{ steps.get-version.outputs.version }}"
