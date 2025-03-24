@@ -26,7 +26,8 @@ We believe book creation should be simple: **Write your content, Push to GitHub,
 - **No Technical Knowledge Required**: Everything is set up and ready to use
 - **Support for Multiple Languages**: Create books in any language
 - **Free and Open Source**: No expensive publishing tools needed
-- **Convenient CLI Tool**: Manage your book builds with an easy-to-use command-line interface
+- **Powerful CLI Tool**: Manage your book with an easy-to-use command-line interface
+- **Standardized Build System**: Uses the `book-tools` package for consistent, reliable builds
 
 ## Getting Started in 3 Easy Steps
 
@@ -70,32 +71,33 @@ You have several options to build your book locally:
 
 ### Using the CLI Tool
 
-The project includes a convenient CLI tool for managing your book builds:
+This project uses the `book-tools` package, which provides a powerful CLI for managing your book:
 
 ```bash
-# Navigate to the CLI directory
-cd tools/cli
-
 # Install dependencies
 npm install
 
+# Build the book
+npm run build
+
 # Run in interactive mode
-node index.js interactive
+npm run interactive
 
 # Create a new chapter
-node index.js create-chapter
+npm run create-chapter
 
 # Check chapter structure
-node index.js check-chapter -n 01
+npm run check-chapter
 
 # Get book information
-node index.js info
+npm run info
 
 # Clean build artifacts
-node index.js clean
-```
+npm run clean
 
-For more details, see the [CLI Tool Documentation](./tools/cli/README.md).
+# Validate configuration
+npm run validate
+```
 
 ### Using Docker
 
@@ -107,9 +109,6 @@ docker pull iksnae/book-builder:latest
 
 # Run a build in the current directory
 docker run --rm -v $(pwd):/workspace iksnae/book-builder:latest /workspace/build.sh
-
-# Or use the CLI tool through Docker
-docker run -it --rm -v $(pwd):/workspace iksnae/book-builder:latest bash -c "cd /workspace && cd tools/cli && npm i && node index.js interactive"
 ```
 
 ### Direct Build Script
@@ -151,6 +150,8 @@ Edit `book.yaml` to change:
 - Output formats
 - Page size and margins
 
+For a complete reference of all available configuration options, see the [Configuration Documentation](https://github.com/iksnae/book-tools/blob/main/docs/CONFIGURATION.md).
+
 ### Advanced Customization
 
 Want to change the look and feel? Edit the templates:
@@ -158,6 +159,10 @@ Want to change the look and feel? Edit the templates:
 - `templates/pdf/` - Control how the PDF version looks
 - `templates/epub/` - Style the e-reader versions
 - `templates/html/` - Customize the web version
+
+## Migration Information
+
+If you're upgrading from a previous version of the template, please see the [Migration Guide](./docs/MIGRATION_GUIDE.md) for information on how to use the new `book-tools` package.
 
 ## Ready-To-Use Solution
 
@@ -174,4 +179,3 @@ This starter kit is open source and available under the MIT License.
 ## Credits
 
 Developed in partnership with [Khaos Studio](http://khaos.studio).
-
