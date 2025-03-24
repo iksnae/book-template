@@ -1,30 +1,72 @@
 #!/bin/bash
 
 # Main build script for book-template
-# This is a convenience wrapper around tools/scripts/build.sh
+# This is a compatibility wrapper around the book-tools CLI
 
 # Make the script exit on error
 set -e
 
-# Make sure the tools/scripts directory exists
-if [ ! -d "tools/scripts" ]; then
-  echo "❌ Error: tools/scripts directory not found!"
-  echo "Make sure you're running this script from the root of the book-template repository."
+# Check if Node.js is installed
+if ! command -v node &> /dev/null; then
+  echo "❌ Error: Node.js is required but not installed."
+  echo "Please install Node.js and npm, then run 'npm install' to install dependencies."
   exit 1
 fi
 
-# Create build directory if it doesn't exist
-mkdir -p build
+# Check if npm dependencies are installed
+if [ ! -d "node_modules" ]; then
+  echo "📦 Installing dependencies..."
+  npm install
+fi
 
-# Create a directory for templates if it doesn't exist
+# Create necessary directories
+mkdir -p build
+mkdir -p book/images
 mkdir -p templates/{pdf,epub,html}/
 
-# Ensure directory structure is in place
-mkdir -p build/images
-mkdir -p book/images
+# Parse arguments to maintain compatibility with old script
+ALL_LANGUAGES=false
+SPECIFIC_LANGUAGE=""
+SKIP_FLAGS=""
 
-# Make the build script executable
-chmod +x tools/scripts/build.sh
+for arg in "$@"
+do
+  case $arg in
+    --all-languages)
+      ALL_LANGUAGES=true
+      ;;
+    --lang=*)
+      SPECIFIC_LANGUAGE="${arg#*=}"
+      ;;
+    --skip-pdf)
+      SKIP_FLAGS="$SKIP_FLAGS --skip-pdf"
+      ;;
+    --skip-epub)
+      SKIP_FLAGS="$SKIP_FLAGS --skip-epub"
+      ;;
+    --skip-mobi)
+      SKIP_FLAGS="$SKIP_FLAGS --skip-mobi"
+      ;;
+    --skip-html)
+      SKIP_FLAGS="$SKIP_FLAGS --skip-html"
+      ;;
+  esac
+done
 
-# Forward all arguments to the main build script
-tools/scripts/build.sh "$@"
+# Generate the command to run book-tools CLI
+if [ "$ALL_LANGUAGES" = true ]; then
+  CMD="npx book build --all-languages $SKIP_FLAGS"
+elif [ -n "$SPECIFIC_LANGUAGE" ]; then
+  CMD="npx book build --lang=$SPECIFIC_LANGUAGE $SKIP_FLAGS"
+else
+  CMD="npx book build $SKIP_FLAGS"
+fi
+
+echo "📚 Running book-tools build: $CMD"
+eval $CMD
+
+# List the build folder contents for verification
+echo -e "\n📝 Contents of build/ directory:"
+ls -la build/
+
+echo "✅ Build process completed successfully!"
