@@ -94,6 +94,9 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
       
+      - name: Pull book-builder Docker image
+        run: docker pull iksnae/book-builder:latest
+      
       - name: Prepare environment
         run: |
           mkdir -p build
@@ -112,7 +115,8 @@ jobs:
       - name: Build book
         run: |
           echo "Building book..."
-          docker run --rm -v "$(pwd):/book" iksnae/book-builder bash -c "cd /book && ./build.sh --docker --all-languages"
+          # Use the book-tools CLI inside the Docker container
+          docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --docker --all-languages"
           
       - name: List build artifacts
         run: |
