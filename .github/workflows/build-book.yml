@@ -153,7 +153,7 @@ jobs:
           
           # Show file sizes for main book formats
           echo "=== Book File Sizes ==="
-          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | xargs du -h 2>/dev/null || echo "Some files may be missing"
+          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" -o -name "*.docx" | xargs du -h 2>/dev/null || echo "Some files may be missing"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -165,6 +165,7 @@ jobs:
             build/*.mobi
             build/*.html
             build/*.md
+            build/*.docx
             build/*/
             build/images/
 
@@ -200,6 +201,7 @@ jobs:
             build/*.epub
             build/*.mobi
             build/*.html
+            build/*.docx
           tag_name: ${{ needs.setup.outputs.version }}
           name: ${{ needs.setup.outputs.book_title || 'Book Template' }} ${{ needs.setup.outputs.version }}
           body: |
@@ -216,6 +218,7 @@ jobs:
             | 📱 EPUB | For most e-readers and mobile devices | [Download EPUB](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.epub) |
             | 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.mobi) |
             | 🌐 HTML | Read online in your browser | [View HTML](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.html) |
+            | 📝 DOCX | For Microsoft Word editing | [Download DOCX](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/${{ needs.setup.outputs.file_prefix || 'write-and-publish' }}.docx) |
             
             ## 🔄 Web Version
             
