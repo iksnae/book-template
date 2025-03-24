@@ -1,3 +1,19 @@
+---
+title: "Write and Publish Your First Book"
+subtitle: "A Complete Guide to Using the Book Template System"
+author: "Your Name"
+publisher: "Publisher Name"
+language: "en"
+toc: true
+rights: "Copyright © 2025 Your Name. All rights reserved."
+description: "A comprehensive guide to writing and publishing books using Markdown and the Book Template system."
+cover-image: "book/images/cover.png"
+---
+
+
+
+<!-- Start of section: 01-introduction.md -->
+
 # Welcome to Book Template
 
 Welcome to this simple guide to creating your first book with Book Template! This short guide will show you how to create beautiful books without needing to be a technical expert.
@@ -25,6 +41,11 @@ In the next few pages, we'll show you:
 4. How to share your book with the world
 
 Let's get started!
+
+
+
+
+<!-- Start of section: 01-creating-your-book.md -->
 
 # Creating Your Book
 
@@ -79,6 +100,11 @@ When you're ready to see your book:
 
 Don't worry if this sounds complicated - it's just one command to run, and your book will be created automatically!
 
+
+
+
+<!-- Start of section: 01-publishing-your-book.md -->
+
 # Publishing Your Book
 
 Now that you've created your book, it's time to share it with the world!
@@ -122,3 +148,5 @@ If you're using GitHub to store your book, you can:
 - Use GitHub Pages to create a simple website for your book
 
 Congratulations! You've now learned the basics of creating and publishing a book with Book Template!
+
+
