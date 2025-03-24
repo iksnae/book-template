@@ -1,0 +1,37 @@
+{
+  "name": "book-template",
+  "version": "1.0.0",
+  "description": "DIY Book Starter Kit powered by book-tools",
+  "main": "index.js",
+  "scripts": {
+    "build": "book build",
+    "build:all": "book build --all-languages",
+    "interactive": "book interactive",
+    "create-chapter": "book create-chapter",
+    "check-chapter": "book check-chapter",
+    "info": "book info",
+    "clean": "book clean"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iksnae/book-template.git"
+  },
+  "keywords": [
+    "book",
+    "ebook",
+    "pdf",
+    "epub",
+    "mobi",
+    "html",
+    "markdown"
+  ],
+  "author": "iksnae",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iksnae/book-template/issues"
+  },
+  "homepage": "https://github.com/iksnae/book-template#readme",
+  "dependencies": {
+    "book-tools": "iksnae/book-tools"
+  }
+}
