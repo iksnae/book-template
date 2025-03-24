@@ -1,0 +1,169 @@
+name: Build Book (Disabled)
+
+# This workflow is currently disabled as we're using the release workflow for all builds.
+# The release workflow is configured to run on main branch pushes and handles both building and releasing.
+# Re-enable this workflow if you need a separate build pipeline for development branches.
+
+on:
+  # Workflow disabled - previously ran on:
+  # push:
+  #   paths:
+  #     - 'book/**'
+  #     - 'templates/**'
+  #     - 'resources/**'
+  #     - '.github/workflows/build.yml'
+  workflow_dispatch:  # Manual trigger only, for testing
+  pull_request:
+    paths:
+      - 'book/**'
+      - 'templates/**'
+      - 'resources/**'
+      - '.github/workflows/build.yml'
+      - 'book.yaml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Load configuration
+      id: config
+      run: |
+        if [ -f "book.yaml" ]; then
+          echo "Using configuration from book.yaml"
+          # Extract book title
+          BOOK_TITLE=$(grep 'title:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+          echo "BOOK_TITLE=$BOOK_TITLE" >> $GITHUB_ENV
+          
+          # Extract book author
+          BOOK_AUTHOR=$(grep 'author:' book.yaml | head -n 1 | cut -d':' -f2- | sed 's/^[ \t]*//' | sed 's/\"//g')
+          echo "BOOK_AUTHOR=$BOOK_AUTHOR" >> $GITHUB_ENV
+        else
+          echo "No book.yaml found, using default values"
+          echo "BOOK_TITLE=My Book" >> $GITHUB_ENV
+          echo "BOOK_AUTHOR=Author Name" >> $GITHUB_ENV
+        fi
+        
+        # Print the configuration values for debugging
+        echo "Book Title: $BOOK_TITLE"
+        echo "Book Author: $BOOK_AUTHOR"
+    
+    - name: Prepare environment
+      run: |
+        mkdir -p build
+        
+        # Create language directories based on what exists in the book/ folder
+        for lang in $(ls -1 book/ 2>/dev/null || echo "en"); do
+          if [ -d "book/$lang" ] && [ "$lang" != "images" ]; then
+            echo "Creating build directory for language: $lang"
+            mkdir -p "build/$lang"
+          fi
+        done
+        
+        # Make sure the build script is executable
+        chmod +x build.sh
+    
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Pull book-builder Docker image
+      run: docker pull iksnae/book-builder:latest
+      
+    - name: Build book (all languages)
+      if: github.event.inputs.languages == ''
+      run: |
+        # Add skip flags if specified
+        SKIP_FLAGS=""
+        if [ -n "${{ github.event.inputs.formats }}" ]; then
+          IFS=',' read -ra FORMATS <<< "${{ github.event.inputs.formats }}"
+          for format in "${FORMATS[@]}"; do
+            SKIP_FLAGS="$SKIP_FLAGS --skip-$format"
+          done
+        fi
+        
+        # Use build.sh script through Docker
+        docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --all-languages $SKIP_FLAGS"
+    
+    - name: Build book (specific languages)
+      if: github.event.inputs.languages != ''
+      run: |
+        # Add skip flags if specified
+        SKIP_FLAGS=""
+        if [ -n "${{ github.event.inputs.formats }}" ]; then
+          IFS=',' read -ra FORMATS <<< "${{ github.event.inputs.formats }}"
+          for format in "${FORMATS[@]}"; do
+            SKIP_FLAGS="$SKIP_FLAGS --skip-$format"
+          done
+        fi
+        
+        IFS=',' read -ra LANGS <<< "${{ github.event.inputs.languages }}"
+        for lang in "${LANGS[@]}"; do
+          echo "Building for language: $lang"
+          docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --lang=$lang $SKIP_FLAGS"
+        done
+    
+    - name: List build artifacts
+      run: |
+        echo "=== Build Directory Contents ==="
+        ls -la build/
+        
+        # List language-specific directories
+        for lang in $(ls -1 build/ 2>/dev/null); do
+          if [ -d "build/$lang" ]; then
+            echo "=== $lang Directory Contents ==="
+            ls -la "build/$lang/" || echo "Directory may be empty"
+          fi
+        done
+        
+        # Show file sizes for main book formats
+        echo "=== Book File Sizes ==="
+        find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" -o -name "*.docx" | xargs du -h 2>/dev/null || echo "Some files may be missing"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: book-files-${{ github.sha }}
+        path: |
+          build/**/*.pdf
+          build/**/*.epub
+          build/**/*.mobi
+          build/**/*.html
+          build/**/*.docx
+          build/**/*.md
+        retention-days: 7
+    
+    - name: Build Summary
+      run: |
+        echo "## 📚 Book Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Title | Author | Branch |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| $BOOK_TITLE | $BOOK_AUTHOR | $(echo ${GITHUB_REF#refs/heads/}) |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        echo "### 📂 Generated Files" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Format | Language | Size |" >> $GITHUB_STEP_SUMMARY
+        echo "|--------|----------|------|" >> $GITHUB_STEP_SUMMARY
+        
+        # List each output file with its size
+        find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" -o -name "*.docx" | while read file; do
+          ext="${file##*.}"
+          lang=$(echo "$file" | sed -E 's#build/([^/]+)/.*#\1#')
+          size=$(du -h "$file" | cut -f1)
+          
+          # Map extension to format name with emoji
+          case "$ext" in
+            pdf) format="📄 PDF" ;;
+            epub) format="📱 EPUB" ;;
+            mobi) format="📚 MOBI" ;;
+            html) format="🌐 HTML" ;;
+            docx) format="📝 DOCX" ;;
+            *) format="📝 $ext" ;;
+          esac
+          
+          echo "| $format | $lang | $size |" >> $GITHUB_STEP_SUMMARY
+        done
