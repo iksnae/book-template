@@ -12,6 +12,12 @@ on:
       - '.github/workflows/build-book.yml'
       - 'book.yaml'  # Configuration file
   workflow_dispatch:  # Allow manual triggering
+    inputs:
+      release:
+        description: 'Create a release'
+        required: false
+        type: boolean
+        default: false
 
 # Permissions for creating releases and GitHub Pages
 permissions:
@@ -30,6 +36,7 @@ jobs:
       book_title: ${{ steps.config.outputs.book_title }}
       book_author: ${{ steps.config.outputs.book_author }}
       file_prefix: ${{ steps.config.outputs.file_prefix }}
+      should_release: ${{ github.ref == 'refs/heads/main' || github.event.inputs.release == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -170,8 +177,8 @@ jobs:
             build/images/
 
   release:
-    # Only run release job on main branch
-    if: github.ref == 'refs/heads/main'
+    # Only run release job on main branch or when manually triggered with release=true
+    if: needs.setup.outputs.should_release == 'true'
     needs: [setup, build]
     runs-on: ubuntu-latest
     steps:
@@ -226,8 +233,8 @@ jobs:
           draft: false
 
   deploy:
-    # Only run deploy job on main branch
-    if: github.ref == 'refs/heads/main'
+    # Only deploy to GitHub Pages when releasing
+    if: needs.setup.outputs.should_release == 'true'
     needs: [build, release]
     runs-on: ubuntu-latest
     steps:
