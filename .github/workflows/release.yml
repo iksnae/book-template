@@ -144,6 +144,7 @@ jobs:
             build/**/*.epub
             build/**/*.mobi
             build/**/*.html
+            build/**/*.docx
             build/**/*.md
 
   release:
@@ -189,6 +190,10 @@ jobs:
           if [ -f "build/en/$PREFIX.mobi" ] || [ -f "build/en/book.mobi" ]; then
             echo "| 📚 MOBI | For Kindle devices | [Download MOBI](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/$PREFIX.mobi) |" >> RELEASE_NOTES.md
           fi
+
+          if [ -f "build/en/$PREFIX.docx" ] || [ -f "build/en/book.docx" ]; then
+            echo "| 📝 DOCX | Microsoft Word format for editing | [Download DOCX](https://github.com/${{ github.repository }}/releases/download/${{ needs.setup.outputs.version }}/$PREFIX.docx) |" >> RELEASE_NOTES.md
+          fi
           
           echo "" >> RELEASE_NOTES.md
           echo "## 🔄 Web Version" >> RELEASE_NOTES.md
@@ -202,13 +207,13 @@ jobs:
           
           # Copy all book files from language directories to the release directory
           # This makes them accessible at the root level for the release
-          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | while read file; do
+          find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" -o -name "*.docx" | while read file; do
             cp "$file" build_release/
           done
           
           # Rename files to use the file prefix if needed
           PREFIX="${{ needs.setup.outputs.file_prefix || 'book' }}"
-          for file in build_release/*.pdf build_release/*.epub build_release/*.mobi build_release/*.html; do
+          for file in build_release/*.pdf build_release/*.epub build_release/*.mobi build_release/*.html build_release/*.docx; do
             if [ -f "$file" ]; then
               # Get filename without path
               filename=$(basename "$file")
@@ -231,6 +236,7 @@ jobs:
             build_release/*.epub
             build_release/*.mobi
             build_release/*.html
+            build_release/*.docx
           tag_name: ${{ needs.setup.outputs.version }}
           name: ${{ needs.setup.outputs.book_title || 'Book' }} ${{ needs.setup.outputs.version }}
           body_path: RELEASE_NOTES.md

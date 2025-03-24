@@ -127,7 +127,7 @@ jobs:
         
         # Show file sizes for main book formats
         echo "=== Book File Sizes ==="
-        find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | xargs du -h 2>/dev/null || echo "Some files may be missing"
+        find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" -o -name "*.docx" | xargs du -h 2>/dev/null || echo "Some files may be missing"
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -138,6 +138,7 @@ jobs:
           build/**/*.epub
           build/**/*.mobi
           build/**/*.html
+          build/**/*.docx
           build/**/*.md
         retention-days: 7
     
@@ -156,7 +157,7 @@ jobs:
         echo "|--------|----------|------|" >> $GITHUB_STEP_SUMMARY
         
         # List each output file with its size
-        find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" | while read file; do
+        find build/ -name "*.pdf" -o -name "*.epub" -o -name "*.mobi" -o -name "*.html" -o -name "*.docx" | while read file; do
           ext="${file##*.}"
           lang=$(echo "$file" | sed -E 's#build/([^/]+)/.*#\1#')
           size=$(du -h "$file" | cut -f1)
@@ -167,6 +168,7 @@ jobs:
             epub) format="📱 EPUB" ;;
             mobi) format="📚 MOBI" ;;
             html) format="🌐 HTML" ;;
+            docx) format="📝 DOCX" ;;
             *) format="📝 $ext" ;;
           esac
           
