@@ -115,8 +115,8 @@ jobs:
       - name: Build book
         run: |
           echo "Building book..."
-          # Use the book-tools CLI inside the Docker container
-          docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && ./build.sh --docker --all-languages"
+          # Use book-tools CLI directly
+          docker run --rm -v "$(pwd):/book" iksnae/book-builder:latest bash -c "cd /book && book build --all-languages"
           
       - name: List build artifacts
         run: |
